@@ -61,7 +61,8 @@ const PROFILE_FITS = ['slim', 'regular', 'relaxed']
 
 export function sanitizeProfile(raw) {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return null
-  if (raw.fit !== undefined && (typeof raw.fit !== 'string' || !PROFILE_FITS.includes(raw.fit))) {
+  // null fit = "no preference" (the app's default), treated as absent.
+  if (raw.fit != null && (typeof raw.fit !== 'string' || !PROFILE_FITS.includes(raw.fit))) {
     return null
   }
   const arr = (v, allowed) =>
@@ -155,12 +156,14 @@ export function validateRequestBody(body) {
   const excluded = Array.isArray(body.exclude)
     ? body.exclude.filter((x) => typeof x === 'string')
     : []
-  const weather = body.weather === undefined ? null : sanitizeWeather(body.weather)
-  if (body.weather !== undefined && !weather) {
+  // null / undefined both mean "not provided" — the client sends null
+  // when it has no weather or profile to include.
+  const weather = body.weather == null ? null : sanitizeWeather(body.weather)
+  if (body.weather != null && !weather) {
     return { status: 400, json: { code: 'invalid-response', message: 'weather must be text metadata.' } }
   }
-  const profile = body.profile === undefined ? null : sanitizeProfile(body.profile)
-  if (body.profile !== undefined && !profile) {
+  const profile = body.profile == null ? null : sanitizeProfile(body.profile)
+  if (body.profile != null && !profile) {
     return { status: 400, json: { code: 'invalid-response', message: 'profile must contain only text preferences.' } }
   }
 

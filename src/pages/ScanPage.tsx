@@ -75,11 +75,20 @@ export function ScanPage() {
   }
 
   if (scan.phase === 'requesting') {
-    return (
-      <div className="flex flex-col items-center gap-4 py-24">
+    // Mount CameraCapture now (not only at 'live') so getUserMedia can
+    // actually start; the stage shows a pending overlay until onLive().
+    return cameraStage(
+      <CameraCapture
+        ref={cameraRef}
+        phase={scan.phase}
+        onLive={scan.setLive}
+        onError={scan.fail}
+        onCaptured={scan.captured}
+      />,
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-ink/40">
         <Spinner size={28} />
-        <p className="text-sm text-ink-soft">Starting camera…</p>
-      </div>
+        <p className="text-sm text-paper">Starting camera…</p>
+      </div>,
     )
   }
 
