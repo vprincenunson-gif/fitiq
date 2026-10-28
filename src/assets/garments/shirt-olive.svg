@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-label="Olive shirt">
+  <title>Olive shirt</title>
+  <g>
+    <ellipse cx="320" cy="452" rx="210" ry="14" fill="#191713" opacity="0.05"/>
+    <path d="M300 128 L236 104 C210 96 184 112 176 138 L162 196 C156 220 172 234 194 228 L258 208 L300 176 Z" fill="#58604f" stroke="#454c40" stroke-width="2"/>
+    <path d="M340 128 L404 104 C430 96 456 112 464 138 L478 196 C484 220 468 234 446 228 L382 208 L340 176 Z" fill="#505749" stroke="#454c40" stroke-width="2"/>
+    <path d="M300 118 L244 92 C212 80 178 88 162 112 L148 168 C142 196 154 214 176 210 L230 200 L258 400 C260 426 276 440 300 440 L340 440 C364 440 380 426 382 400 L410 200 L464 210 C486 214 498 196 492 168 L478 112 C462 88 428 80 396 92 L340 118 Z" fill="#60685a" stroke="#454c40" stroke-width="2"/>
+    <path d="M284 108 L264 118 C254 122 251 133 259 141 L302 124 Z" fill="#646c5e" stroke="#3d4438" stroke-width="1.5"/>
+    <path d="M356 108 L376 118 C386 122 389 133 381 141 L338 124 Z" fill="#646c5e" stroke="#3d4438" stroke-width="1.5"/>
+    <path d="M320 124 L320 436" stroke="#454c40" stroke-width="2"/>
+    <circle cx="320" cy="150" r="3.5" fill="#c9bba3"/>
+    <circle cx="320" cy="226" r="3.5" fill="#c9bba3"/>
+    <circle cx="320" cy="302" r="3.5" fill="#c9bba3"/>
+    <circle cx="320" cy="378" r="3.5" fill="#c9bba3"/>
+    <path d="M300 160 C295 240 298 330 305 430" stroke="#4a5244" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <path d="M340 160 C345 240 342 330 335 430" stroke="#454c3f" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <path d="M262 424 Q320 444 378 424" stroke="#454c40" stroke-width="2" fill="none"/>
+  </g>
+</svg>

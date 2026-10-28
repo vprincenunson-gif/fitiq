@@ -1,0 +1,41 @@
+@import 'tailwindcss';
+
+/* ─────────────────────────────────────────────────────
+   FITIQ design tokens — Tailwind v4 CSS-first theme
+   Warm editorial palette, near-black ink, beige accents
+   ───────────────────────────────────────────────────── */
+@theme {
+  /* Surfaces */
+  --color-paper: #faf8f3;          /* warm off-white page background */
+  --color-paper-raised: #ffffff;   /* cards, panels */
+  --color-cream: #f0ebe1;          /* subtle tint bands */
+  --color-line: #e7e1d6;           /* hairline borders */
+  --color-line-strong: #d8d0c2;    /* stronger hairlines / dividers */
+
+  /* Ink */
+  --color-ink: #161310;            /* near-black primary text */
+  --color-ink-soft: #57514a;       /* secondary text */
+  --color-ink-faint: #97907f;      /* tertiary / labels */
+
+  /* Accents */
+  --color-beige: #c5b394;          /* primary accent — warm sand */
+  --color-beige-deep: #a08d6d;     /* accent hover / deep sand */
+  --color-clay: #b06a4e;           /* warm secondary (sparingly) */
+  --color-forest: #3f4a3c;         /* deep neutral alternative */
+
+  /* Shadows — soft, layered, editorial */
+  --shadow-lift: 0 1px 2px rgb(22 19 16 / 0.04), 0 8px 24px rgb(22 19 16 / 0.06);
+  --shadow-hover: 0 2px 4px rgb(22 19 16 / 0.05), 0 16px 40px rgb(22 19 16 / 0.1);
+  --shadow-float: 0 2px 6px rgb(22 19 16 / 0.06), 0 24px 64px rgb(22 19 16 / 0.14);
+
+  /* Typography */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Motion */
+  --ease-editorial: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-med: 250ms;
+  --duration-slow: 400ms;
+}

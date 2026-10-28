@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-label="Tan suede shoes">
+  <title>Tan suede shoes</title>
+  <g>
+    <ellipse cx="320" cy="440" rx="180" ry="12" fill="#191713" opacity="0.05"/>
+    <path d="M178 366 Q170 386 196 394 Q300 408 452 392 Q470 386 468 372 Q466 362 448 364 L196 358 Q180 357 178 366 Z" fill="#4a3a28"/>
+    <path d="M220 360 C205 330 208 290 238 262 C270 232 330 214 388 216 C430 218 452 236 458 264 L460 340 C455 352 440 356 424 354 L240 356 C226 356 220 358 220 360 Z" fill="#b99b71"/>
+    <path d="M388 216 C372 218 358 224 348 234 C342 240 340 248 342 254 C344 258 350 260 358 258 L408 252 C414 250 416 246 414 242 C410 228 402 218 388 216 Z" fill="#a98a60"/>
+    <path d="M428 240 C440 262 446 300 444 336" stroke="#a98a60" fill="none" stroke-width="2"/>
+    <path d="M260 310 C292 300 340 292 384 290" stroke="#c6ab85" fill="none" stroke-width="1.5" opacity="0.7"/>
+    <path d="M242 342 C282 332 338 326 396 326" stroke="#c6ab85" fill="none" stroke-width="1.5" opacity="0.7"/>
+  </g>
+</svg>

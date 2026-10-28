@@ -1,0 +1,84 @@
+import { useState } from 'react'
+import type { DetectedGarment, GarmentCategory } from '../../lib/types'
+import { CATEGORY_LABELS } from '../../lib/types'
+import { Button } from '../ui/Button'
+import { Icon } from '../ui/Icon'
+
+interface ResultConfirmProps {
+  detected: DetectedGarment
+  /** The actual camera capture that will be stored as the item's image. */
+  capturedImage?: string | null
+  onAdd: (name: string, category: GarmentCategory, colorLabel: string) => void
+  onRescan: () => void
+}
+
+export function ResultConfirm({ detected, capturedImage, onAdd, onRescan }: ResultConfirmProps) {
+  const [name, setName] = useState(detected.name)
+  const [category, setCategory] = useState<GarmentCategory>(detected.category)
+  const [colorLabel, setColorLabel] = useState(detected.colorLabel)
+
+  return (
+    <div className="mx-auto w-full max-w-lg">
+      <div className="surface overflow-hidden rounded-2xl">
+        <div className="flex items-center justify-center bg-cream/60 py-10">
+          <img
+            src={capturedImage ?? detected.image}
+            alt={`Captured photo of ${detected.name}`}
+            className="h-56 w-56 object-contain"
+          />
+        </div>
+
+        <div className="space-y-5 p-7">
+          <div>
+            <p className="overline mb-2">Detected</p>
+            <p className="font-display text-xl text-ink">{detected.name}</p>
+          </div>
+
+          <label className="block">
+            <span className="overline mb-2 block">Item name</span>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full border-b border-line bg-transparent py-2 text-sm text-ink outline-none focus:border-beige-deep"
+            />
+          </label>
+
+          <div className="grid grid-cols-2 gap-5">
+            <label className="block">
+              <span className="overline mb-2 block">Category</span>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as GarmentCategory)}
+                className="w-full border-b border-line bg-paper-raised py-2 text-sm text-ink outline-none focus:border-beige-deep"
+              >
+                {(Object.keys(CATEGORY_LABELS) as GarmentCategory[]).map((c) => (
+                  <option key={c} value={c}>
+                    {CATEGORY_LABELS[c]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="overline mb-2 block">Color</span>
+              <input
+                value={colorLabel}
+                onChange={(e) => setColorLabel(e.target.value)}
+                className="w-full border-b border-line bg-transparent py-2 text-sm text-ink outline-none focus:border-beige-deep"
+              />
+            </label>
+          </div>
+
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+            <Button onClick={() => onAdd(name.trim() || detected.name, category, colorLabel.trim() || detected.colorLabel)} fullWidth>
+              <Icon name="check" size={16} />
+              Add to wardrobe
+            </Button>
+            <Button variant="ghost" onClick={onRescan} fullWidth>
+              Rescan
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

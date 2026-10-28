@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-label="Clay loafers">
+  <title>Clay loafers</title>
+  <g>
+    <ellipse cx="320" cy="440" rx="180" ry="12" fill="#191713" opacity="0.05"/>
+    <path d="M178 366 Q170 386 196 394 Q300 408 452 392 Q470 386 468 372 Q466 362 448 364 L196 358 Q180 357 178 366 Z" fill="#4a3025"/>
+    <path d="M220 360 C205 330 208 290 238 262 C270 232 330 214 388 216 C430 218 452 236 458 264 L460 340 C455 352 440 356 424 354 L240 356 C226 356 220 358 220 360 Z" fill="#a96a4a"/>
+    <path d="M348 218 C368 220 388 226 402 238 C414 248 416 258 414 266 L408 276 L340 266 C332 262 328 252 330 242 C332 230 340 220 348 218 Z" fill="#93593d"/>
+    <path d="M428 240 C440 262 446 300 444 336" stroke="#93593d" fill="none" stroke-width="2"/>
+    <path d="M256 316 C292 308 340 302 388 302" stroke="#bb7a55" fill="none" stroke-width="1.5" opacity="0.7"/>
+  </g>
+</svg>
