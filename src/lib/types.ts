@@ -22,6 +22,43 @@ export type GarmentFit = 'slim' | 'regular' | 'relaxed'
 
 export type GarmentSource = 'scanned' | 'sample'
 
+/** Real-world wear state of a garment. Defaults to `ready`. */
+export type WearStatus = 'ready' | 'needs-ironing' | 'worn' | 'in-laundry'
+
+/** Default wear state for scanned/new items. */
+export const DEFAULT_WEAR_STATUS: WearStatus = 'ready'
+
+/** All wear states in display order. */
+export const WEAR_STATUS_VALUES: WearStatus[] = ['ready', 'needs-ironing', 'worn', 'in-laundry']
+
+/** Short chip labels — sized for the compact card selector. */
+export const WEAR_STATUS_SHORT_LABELS: Record<WearStatus, string> = {
+  ready: 'Ready',
+  'needs-ironing': 'Iron',
+  worn: 'Worn',
+  'in-laundry': 'Laundry',
+}
+
+/** Full user-facing labels. */
+export const WEAR_STATUS_LABELS: Record<WearStatus, string> = {
+  ready: 'Ready to wear',
+  'needs-ironing': 'Needs ironing',
+  worn: 'Worn/Used',
+  'in-laundry': 'In laundry',
+}
+
+/** Only `ready` garments are available for outfit recommendations. */
+export function isWearable(garment: Pick<Garment, 'wearStatus'>): boolean {
+  return (garment.wearStatus ?? DEFAULT_WEAR_STATUS) === 'ready'
+}
+
+/** Safe read: treats unknown/legacy values as the default status. */
+export function garmentWearStatus(garment: Pick<Garment, 'wearStatus'>): WearStatus {
+  return garment.wearStatus && WEAR_STATUS_VALUES.includes(garment.wearStatus)
+    ? garment.wearStatus
+    : DEFAULT_WEAR_STATUS
+}
+
 export interface Garment {
   id: string
   name: string
@@ -30,6 +67,8 @@ export interface Garment {
   colorLabel: string
   styleTags: string[]
   fit: GarmentFit
+  /** Real-world wear state; defaults to `ready` via garmentWearStatus(). */
+  wearStatus?: WearStatus
   /** Garment image: SVG art path (e.g. "/garments/shirt-crisp-white.svg") or a captured camera photo data URL */
   image: string
   source: GarmentSource

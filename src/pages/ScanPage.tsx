@@ -13,7 +13,7 @@ import { Button } from '../components/ui/Button'
 import { Icon } from '../components/ui/Icon'
 import { Overline } from '../components/ui/Overline'
 import { Spinner } from '../components/ui/Spinner'
-import type { Garment } from '../lib/types'
+import { DEFAULT_WEAR_STATUS, type Garment } from '../lib/types'
 
 export function ScanPage() {
   const scan = useScan()
@@ -41,6 +41,9 @@ export function ScanPage() {
       // Use the actual captured camera photo; fall back to the detected
       // sample art only when nothing was captured (sample-item path).
       image: scan.capturedDataUrl ?? scan.detected.image,
+      // New items start in the wash-and-wear state so AI recommendations
+      // can pick them immediately.
+      wearStatus: DEFAULT_WEAR_STATUS,
       source: 'scanned',
       scannedAt: new Date().toISOString(),
       favorite: false,

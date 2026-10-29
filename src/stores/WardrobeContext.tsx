@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Garment } from '../lib/types'
+import { DEFAULT_WEAR_STATUS, WEAR_STATUS_VALUES } from '../lib/types'
 import { MOCK_WARDROBE } from '../data/mockWardrobe'
 
 // v2: previous versions seeded demo items under the v1 key — bump so a
@@ -25,6 +26,13 @@ function loadInitial(): { garments: Garment[]; ready: boolean } {
     if (raw) {
       const parsed = JSON.parse(raw) as Garment[]
       if (Array.isArray(parsed) && parsed.length > 0) {
+        // Backfill wear status for items stored before the feature existed,
+        // and repair any corrupted values, so persistence stays clean.
+        for (const g of parsed) {
+          if (!g.wearStatus || !WEAR_STATUS_VALUES.includes(g.wearStatus)) {
+            g.wearStatus = DEFAULT_WEAR_STATUS
+          }
+        }
         return { garments: parsed, ready: true }
       }
     }

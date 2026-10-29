@@ -5,6 +5,7 @@ import { Icon } from '../ui/Icon'
 const NAV = [
   { to: '/wardrobe', label: 'Wardrobe' },
   { to: '/try-on', label: 'Your Fit' },
+  { to: '/planner', label: 'Planner' },
 ]
 
 export function Header() {

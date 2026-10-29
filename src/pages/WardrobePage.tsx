@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import type { Garment, WearStatus } from '../lib/types'
 import { useWardrobe } from '../stores/WardrobeContext'
 import { CategoryFilter, type CategoryFilterValue } from '../components/wardrobe/CategoryFilter'
 import { WardrobeGrid } from '../components/wardrobe/WardrobeGrid'
@@ -9,7 +10,7 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { Overline } from '../components/ui/Overline'
 
 export function WardrobePage() {
-  const { garments, ready } = useWardrobe()
+  const { garments, ready, updateGarment } = useWardrobe()
   const [searchParams, setSearchParams] = useSearchParams()
   const urlCat = searchParams.get('cat')
 
@@ -17,6 +18,13 @@ export function WardrobePage() {
     urlCat === 'shirt' || urlCat === 'pants' || urlCat === 'shoes' ? urlCat : 'all'
 
   const [filter, setFilter] = useState<CategoryFilterValue>(initialFilter)
+
+  const handleSetStatus = useCallback(
+    (garment: Garment, status: WearStatus) => {
+      updateGarment(garment.id, { wearStatus: status })
+    },
+    [updateGarment],
+  )
 
   const counts = useMemo(() => {
     const result: Partial<Record<CategoryFilterValue, number>> = {}
@@ -61,6 +69,7 @@ export function WardrobePage() {
         <WardrobeGrid
           garments={visible}
           loading={!ready}
+          onSetStatus={handleSetStatus}
           empty={
             <EmptyState
               icon="hanger"

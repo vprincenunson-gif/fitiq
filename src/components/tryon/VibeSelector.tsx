@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import type { Garment, GarmentCategory, OutfitComposition, StyleProfile } from '../../lib/types'
+import { isWearable } from '../../lib/types'
 import { RecommendationError, VIBES, VIBE_ORDER, normalizeRecommendation, toDescriptor, type RecommendedOutfit, type Vibe, type WeatherContext } from '../../services/recommend'
 import { outfitRecommendationService } from '../../services'
 import { Button } from '../ui/Button'
@@ -56,14 +57,24 @@ export function VibeSelector({ wardrobe, current, onAdd, onOutfitGenerated, weat
     setWorking(true)
     setResult(null)
     setError(null)
+    // Only garments currently ready to wear are eligible — items marked
+    // Needs ironing / Worn / In laundry stay out of every recommendation.
+    const eligible = wardrobe.filter(isWearable)
+    if (eligible.length === 0) {
+      setError(
+        'Nothing is ready to wear right now — set at least one item to “Ready” in your Wardrobe, then build your fit again.',
+      )
+      setWorking(false)
+      return
+    }
     try {
       const raw = await outfitRecommendationService.recommend({
         vibe,
-        wardrobe: wardrobe.map(toDescriptor),
+        wardrobe: eligible.map(toDescriptor),
         current: {
-          shirt: current.top ? toDescriptor(current.top) : undefined,
-          pants: current.bottom ? toDescriptor(current.bottom) : undefined,
-          shoes: current.shoes ? toDescriptor(current.shoes) : undefined,
+          shirt: current.top && isWearable(current.top) ? toDescriptor(current.top) : undefined,
+          pants: current.bottom && isWearable(current.bottom) ? toDescriptor(current.bottom) : undefined,
+          shoes: current.shoes && isWearable(current.shoes) ? toDescriptor(current.shoes) : undefined,
         },
         exclude: excludeRef.current,
         weather: weather ?? undefined,
@@ -72,12 +83,12 @@ export function VibeSelector({ wardrobe, current, onAdd, onOutfitGenerated, weat
       if (run !== buildRun.current) return // stale — a newer build superseded this
       const recommended = normalizeRecommendation(
         raw,
-        new Set(wardrobe.map((g) => g.id)),
+        new Set(eligible.map((g) => g.id)),
       )
       const appliedIds: string[] = []
       ;[recommended.topId, recommended.bottomId, recommended.shoesId].forEach((id) => {
         if (!id) return
-        const garment = wardrobe.find((g) => g.id === id)
+        const garment = eligible.find((g) => g.id === id)
         if (garment) {
           onAdd({ id: garment.id, category: garment.category })
           appliedIds.push(garment.id)

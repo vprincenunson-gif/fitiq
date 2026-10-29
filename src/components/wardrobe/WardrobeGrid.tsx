@@ -1,4 +1,4 @@
-import type { Garment } from '../../lib/types'
+import type { Garment, WearStatus } from '../../lib/types'
 import { GarmentCard } from './GarmentCard'
 import { Skeleton } from '../ui/Skeleton'
 
@@ -7,9 +7,17 @@ interface WardrobeGridProps {
   loading?: boolean
   empty?: React.ReactNode
   inOutfitIds?: Set<string>
+  /** Change a garment's wear status right from the card. */
+  onSetStatus?: (garment: Garment, status: WearStatus) => void
 }
 
-export function WardrobeGrid({ garments, loading = false, empty, inOutfitIds }: WardrobeGridProps) {
+export function WardrobeGrid({
+  garments,
+  loading = false,
+  empty,
+  inOutfitIds,
+  onSetStatus,
+}: WardrobeGridProps) {
   if (loading) {
     return (
       <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
@@ -31,6 +39,7 @@ export function WardrobeGrid({ garments, loading = false, empty, inOutfitIds }: 
           key={garment.id}
           garment={garment}
           inOutfit={inOutfitIds?.has(garment.id)}
+          onSetStatus={onSetStatus ? (status) => onSetStatus(garment, status) : undefined}
         />
       ))}
     </div>
