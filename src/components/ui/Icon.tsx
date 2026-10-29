@@ -8,6 +8,9 @@ export type IconName =
   | 'check'
   | 'x'
   | 'chevron-right'
+  | 'chevron-left'
+  | 'zoom-in'
+  | 'zoom-out'
   | 'arrow-right'
   | 'heart'
   | 'scan'
@@ -28,6 +31,13 @@ const PATHS: Record<IconName, React.ReactNode> = {
   check: <path d="M5 12.5 10 17.5 19 7" />,
   x: <path d="M6 6l12 12M18 6 6 18" />,
   'chevron-right': <path d="M9 5l7 7-7 7" />,
+  'chevron-left': <path d="M15 5l-7 7 7 7" />,
+  'zoom-in': (
+    <path d="M11 18.5a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15ZM20.5 20.5 16 16M8.5 11h5M11 8.5v5" />
+  ),
+  'zoom-out': (
+    <path d="M11 18.5a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15ZM20.5 20.5 16 16M8.5 11h5" />
+  ),
   'arrow-right': <path d="M4 12h15M13 6l6 6-6 6" />,
   heart: <path d="M12 20s-7.5-4.6-9.3-9.1C1.4 7.6 3.5 4.5 6.8 4.5c2 0 3.8 1.2 4.7 3 .9-1.8 2.7-3 4.7-3 3.3 0 5.4 3.1 4.1 6.4C19.5 15.4 12 20 12 20Z" />,
   scan: (
