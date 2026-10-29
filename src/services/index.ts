@@ -1,4 +1,4 @@
-import { MockDetectionService, type GarmentDetectionService } from './detection'
+import { LocalDetectionService, type GarmentDetectionService } from './detection'
 import { MockTryOnService, type TryOnService } from './tryon'
 import { MockOutfitRecommendationService, type OutfitRecommendationService } from './recommend'
 import { RemoteOutfitRecommendationService } from './remote'
@@ -13,7 +13,7 @@ import { LocalWeatherService, type WeatherService } from './weather'
  * VITE_RECOMMEND_PROVIDER=groq; otherwise the local mock runs. The remote
  * service falls back to the mock on any transport/provider failure.
  */
-export const detectionService: GarmentDetectionService = new MockDetectionService()
+export const detectionService: GarmentDetectionService = new LocalDetectionService()
 export const tryOnService: TryOnService = new MockTryOnService()
 
 const useRemoteRecommendation = import.meta.env.VITE_RECOMMEND_PROVIDER === 'groq'

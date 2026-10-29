@@ -11,6 +11,7 @@ export type GarmentColor =
   | 'beige'
   | 'charcoal'
   | 'navy'
+  | 'blue'
   | 'olive'
   | 'clay'
   | 'sand'
@@ -107,4 +108,18 @@ export function categoryNextInSequence(state: OutfitComposition): GarmentCategor
   if (!state.bottom) return 'pants'
   if (!state.shoes) return 'shoes'
   return null
+}
+
+/**
+ * Generic, user-facing name built from the metadata we actually know:
+ * the analysed colour and the category the user picked. No demo/branded
+ * garment names are attached to real captures.
+ */
+export function genericGarmentName(
+  colorLabel: string,
+  category: GarmentCategory,
+): string {
+  const singular = CATEGORY_SINGULAR[category]
+  const label = colorLabel.trim()
+  return label ? `${label} ${singular}` : singular
 }

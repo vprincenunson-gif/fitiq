@@ -12,7 +12,7 @@ interface ItemDetailPanelProps {
 }
 
 const COLOR_OPTIONS: GarmentColor[] = [
-  'white', 'black', 'oat', 'beige', 'charcoal', 'navy',
+  'white', 'black', 'oat', 'beige', 'charcoal', 'navy', 'blue',
   'olive', 'clay', 'sand', 'tan', 'denim',
 ]
 
