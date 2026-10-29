@@ -2,17 +2,23 @@ import type { DetectedGarment, GarmentCategory, GarmentColor } from '../lib/type
 import { genericGarmentName } from '../lib/types'
 
 /**
+ * Where scan metadata comes from:
+ *  - `local`: pixel analysis in the browser (no upload)
+ *  - `vision`: the server-side Groq Vision route (only after consent)
+ */
+export type DetectionMode = 'local' | 'vision'
+
+export interface DetectionOptions {
+  mode?: DetectionMode
+}
+
+/**
  * Future AI vision boundary: classify a captured camera frame and return the
- * detected garment. Swap LocalDetectionService for a real implementation
- * (hosted classification/segmentation API) without touching UI code.
- *
- * The current implementation is intentionally local and deterministic: it
- * reads the captured frame's pixels to estimate the garment colour and
- * attaches only generic metadata. No network call is made, so a clothing
- * photo never leaves the browser.
+ * detected garment. Implementations must never infer consent themselves —
+ * callers pass the explicit mode selected by the user.
  */
 export interface GarmentDetectionService {
-  detect(frame: ImageData | string): Promise<DetectedGarment>
+  detect(frame: ImageData | string, options?: DetectionOptions): Promise<DetectedGarment>
 }
 
 /** Category is confirmed/edited by the user; local analysis cannot infer it. */
@@ -237,6 +243,7 @@ export class LocalDetectionService implements GarmentDetectionService {
       styleTags: [],
       fit: 'regular',
       image: typeof frame === 'string' ? frame : '',
+      source: 'local',
     }
   }
 }

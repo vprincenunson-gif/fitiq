@@ -63,6 +63,12 @@ export interface DetectedGarment {
   fit: GarmentFit
   /** Sample SVG chosen to represent the detected item */
   image: string
+  /** Vision-model confidence in the result (0–1), when AI was used. */
+  confidence?: number
+  /** Where the metadata came from. */
+  source?: 'vision' | 'local'
+  /** True when AI was requested but local analysis was used instead. */
+  fallback?: boolean
 }
 
 export interface Suggestion {

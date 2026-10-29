@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useScan } from '../stores/ScanContext'
 import { useWardrobe } from '../stores/WardrobeContext'
 import { CameraCapture, type CameraCaptureHandle } from '../components/scan/CameraCapture'
+import { CaptureConsent } from '../components/scan/CaptureConsent'
 import { ScanOverlay } from '../components/scan/ScanOverlay'
 import { DetectionHUD } from '../components/scan/DetectionHUD'
 import { ResultConfirm } from '../components/scan/ResultConfirm'
@@ -20,12 +21,12 @@ export function ScanPage() {
   const navigate = useNavigate()
   const cameraRef = useRef<CameraCaptureHandle>(null)
 
-  // After the capture flash, kick off (mock) detection.
+  // After the capture flash, pause for explicit consent before any analysis.
   useEffect(() => {
     if (scan.phase !== 'capturing') return
-    const timer = setTimeout(() => scan.confirmCapture(), 450)
+    const timer = setTimeout(() => scan.requestConsent(), 450)
     return () => clearTimeout(timer)
-  }, [scan.phase, scan.confirmCapture])
+  }, [scan.phase, scan.requestConsent])
 
   const handleAdd = (name: string, category: Garment['category'], colorLabel: string) => {
     if (!scan.detected) return
@@ -107,6 +108,17 @@ export function ScanPage() {
           </div>
         </>
       ),
+    )
+  }
+
+  if (scan.phase === 'consent') {
+    return (
+      <CaptureConsent
+        image={scan.capturedDataUrl}
+        onAnalyze={() => scan.analyze('vision')}
+        onLocal={() => scan.analyze('local')}
+        onRescan={scan.rescan}
+      />
     )
   }
 

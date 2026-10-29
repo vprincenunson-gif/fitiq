@@ -12,6 +12,7 @@ import { readFile, stat } from 'node:fs/promises'
 import { join, extname, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { handleRecommendBody } from './groq.mjs'
+import { handleDetectBody } from './vision.mjs'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const DIST_DIR = join(ROOT, 'dist')
@@ -33,15 +34,28 @@ const MIME = {
 }
 
 function sendJson(res, status, body) {
-  res.writeHead(status, { 'Content-Type': 'application/json' })
+  res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' })
   res.end(JSON.stringify(body))
 }
 
-function readBody(req) {
+function readBody(req, maxBytes = 3_500_000) {
   return new Promise((resolve, reject) => {
     const chunks = []
-    req.on('data', (chunk) => chunks.push(chunk))
+    let size = 0
+    let tooLarge = false
+    req.on('data', (chunk) => {
+      if (tooLarge) return
+      size += chunk.length
+      if (size > maxBytes) {
+        tooLarge = true
+        chunks.length = 0
+        reject(Object.assign(new Error('Request body too large'), { code: 'too-large' }))
+        return
+      }
+      chunks.push(chunk)
+    })
     req.on('end', () => {
+      if (tooLarge) return
       try {
         resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')))
       } catch {
@@ -61,6 +75,22 @@ async function handleRecommend(req, res) {
     return
   }
   const { status, json } = await handleRecommendBody(payload, process.env.GROQ_API_KEY)
+  sendJson(res, status, json)
+}
+
+async function handleDetect(req, res) {
+  let payload
+  try {
+    payload = await readBody(req)
+  } catch (err) {
+    if (err && err.code === 'too-large') {
+      sendJson(res, 413, { code: 'invalid-image', message: 'Photo is too large (2 MB maximum).' })
+    } else {
+      sendJson(res, 400, { code: 'invalid-image', message: 'Request body must be valid JSON.' })
+    }
+    return
+  }
+  const { status, json } = await handleDetectBody(payload, process.env.GROQ_API_KEY)
   sendJson(res, status, json)
 }
 
@@ -93,6 +123,10 @@ const server = createServer((req, res) => {
     void handleRecommend(req, res)
     return
   }
+  if (req.method === 'POST' && url.pathname === '/api/detect-garment') {
+    void handleDetect(req, res)
+    return
+  }
   if (req.method === 'GET' && url.pathname.startsWith('/api/')) {
     sendJson(res, 404, { code: 'invalid-response', message: 'Unknown API route.' })
     return
@@ -108,6 +142,6 @@ const server = createServer((req, res) => {
 server.listen(PORT, () => {
   console.log(`[FITIQ] production server listening on http://localhost:${PORT}`)
   if (!process.env.GROQ_API_KEY) {
-    console.warn('[FITIQ] GROQ_API_KEY is not set — /api/recommend will return 503 (mock fallback in app covers UX).')
+    console.warn('[FITIQ] GROQ_API_KEY is not set — /api/recommend and /api/detect-garment will return 503 (app fallbacks cover UX).')
   }
 })

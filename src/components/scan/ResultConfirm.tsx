@@ -46,6 +46,18 @@ export function ResultConfirm({ detected, capturedImage, onAdd, onRescan }: Resu
           <div>
             <p className="overline mb-2">Detected</p>
             <p className="font-display text-xl text-ink">{genericName}</p>
+            {detected.source === 'vision' && typeof detected.confidence === 'number' && (
+              <p className="mt-1 text-xs text-ink-faint">
+                Groq Vision · {Math.round(detected.confidence * 100)}% confidence
+              </p>
+            )}
+            {detected.source === 'local' && (
+              <p className="mt-1 text-xs text-ink-faint">
+                {detected.fallback
+                  ? 'On-device fallback (AI unavailable)'
+                  : 'On-device analysis'}
+              </p>
+            )}
           </div>
 
           <label className="block">
