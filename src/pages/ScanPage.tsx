@@ -74,9 +74,11 @@ export function ScanPage() {
     )
   }
 
-  if (scan.phase === 'requesting') {
-    // Mount CameraCapture now (not only at 'live') so getUserMedia can
-    // actually start; the stage shows a pending overlay until onLive().
+  if (scan.phase === 'requesting' || scan.phase === 'live') {
+    // Render one <CameraCapture> element for both phases. Keeping the same
+    // element (rather than swapping branches) guarantees the mounted <video>
+    // and its MediaStream survive the requesting → live transition.
+    const requesting = scan.phase === 'requesting'
     return cameraStage(
       <CameraCapture
         ref={cameraRef}
@@ -85,35 +87,26 @@ export function ScanPage() {
         onError={scan.fail}
         onCaptured={scan.captured}
       />,
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-ink/40">
-        <Spinner size={28} />
-        <p className="text-sm text-paper">Starting camera…</p>
-      </div>,
-    )
-  }
-
-  if (scan.phase === 'live') {
-    return cameraStage(
-      <CameraCapture
-        ref={cameraRef}
-        phase={scan.phase}
-        onLive={scan.setLive}
-        onError={scan.fail}
-        onCaptured={scan.captured}
-      />,
-      <>
-        <ScanOverlay captured={false} />
-        <div className="absolute inset-x-0 bottom-6 flex justify-center">
-          <button
-            type="button"
-            onClick={() => cameraRef.current?.capture()}
-            aria-label="Capture photo"
-            className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-paper bg-paper/15 backdrop-blur-sm transition-transform active:scale-95"
-          >
-            <span className="h-12 w-12 rounded-full bg-paper" />
-          </button>
+      requesting ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-ink/40">
+          <Spinner size={28} />
+          <p className="text-sm text-paper">Starting camera…</p>
         </div>
-      </>,
+      ) : (
+        <>
+          <ScanOverlay captured={false} />
+          <div className="absolute inset-x-0 bottom-6 flex justify-center">
+            <button
+              type="button"
+              onClick={() => cameraRef.current?.capture()}
+              aria-label="Capture photo"
+              className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-paper bg-paper/15 backdrop-blur-sm transition-transform active:scale-95"
+            >
+              <span className="h-12 w-12 rounded-full bg-paper" />
+            </button>
+          </div>
+        </>
+      ),
     )
   }
 

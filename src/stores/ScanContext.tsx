@@ -35,7 +35,10 @@ export function ScanProvider({ children }: { children: ReactNode }) {
   const [detected, setDetected] = useState<DetectedGarment | null>(null)
   const detectRun = useRef(0)
 
-  const begin = useCallback(() => setPhase('requesting'), [])
+  const begin = useCallback(() => {
+    setError(null)
+    setPhase('requesting')
+  }, [])
   const setLive = useCallback(() => setPhase('live'), [])
 
   const captured = useCallback((dataUrl: string) => {
