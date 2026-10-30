@@ -6,17 +6,20 @@ import { useWardrobe } from '../stores/WardrobeContext'
 import { MOCK_WARDROBE } from '../data/mockWardrobe'
 import type { GarmentCategory } from '../lib/types'
 
-const CATEGORY_LABELS: Record<GarmentCategory, string> = {
-  shirt: 'Shirts',
-  pants: 'Pants',
-  shoes: 'Shoes',
-}
+const CATEGORY_GROUPS: { label: string; categories: GarmentCategory[] }[] = [
+  { label: 'Tops', categories: ['shirt', 'blouse', 'top'] },
+  { label: 'Bottoms', categories: ['pants', 'jeans', 'skirt'] },
+  { label: 'Dresses & Jumpsuits', categories: ['dress', 'jumpsuit'] },
+  { label: 'Ethnic Wear', categories: ['ethnic'] },
+  { label: 'Footwear', categories: ['shoes'] },
+  { label: 'Accessories', categories: ['accessory'] },
+]
 
 const STEPS = [
   {
     key: 'scan',
     title: 'Scan',
-    copy: 'Point your camera at a shirt, pants, or shoes — FITIQ files it away.',
+    copy: 'Point your camera at a top, jeans, a dress or shoes — FITIQ files it away.',
   },
   {
     key: 'organize',
@@ -126,7 +129,8 @@ export function HomePage() {
       ? { shirt: heroShirt.image, pants: heroPants.image, shoes: heroShoes.image }
       : undefined
 
-  const categoryCount = (cat: GarmentCategory) => garments.filter((g) => g.category === cat).length
+  const categoryCount = (categories: GarmentCategory[]) =>
+    garments.filter((g) => categories.includes(g.category)).length
 
   return (
     <div>
@@ -141,7 +145,7 @@ export function HomePage() {
             <p className="mt-5 max-w-md text-lg leading-relaxed text-ink-soft">
               {hasAny
                 ? 'Your pieces are organized. Now let FITIQ style them into outfits you’ll actually wear.'
-                : 'Scan your first shirt, pants, or shoes. Build a digital wardrobe, then let FITIQ style it.'}
+                : 'Scan your first piece — a top, jeans, a dress or shoes. Build a digital wardrobe, then let FITIQ style it.'}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Link to="/scan">
@@ -197,24 +201,24 @@ export function HomePage() {
           </Link>
         </div>
 
-        <div className="mt-6 grid gap-5 md:grid-cols-3">
-          {(Object.keys(CATEGORY_LABELS) as GarmentCategory[]).map((cat) => {
-            const count = categoryCount(cat)
+        <div className="mt-6 grid gap-5 sm:grid-cols-2 md:grid-cols-3">
+          {CATEGORY_GROUPS.map((group) => {
+            const count = categoryCount(group.categories)
             return (
               <Link
-                key={cat}
-                to={`/wardrobe?cat=${cat}`}
+                key={group.label}
+                to="/wardrobe"
                 className="group surface rounded-2xl p-6 transition-transform duration-300 ease-editorial hover:-translate-y-0.5"
               >
                 <div className="flex items-baseline justify-between">
-                  <h3 className="font-display text-xl">{CATEGORY_LABELS[cat]}</h3>
+                  <h3 className="font-display text-xl">{group.label}</h3>
                   <span className="overline">{count === 0 ? 'empty' : `${count} piece${count === 1 ? '' : 's'}`}</span>
                 </div>
                 <p className="mt-1.5 text-sm text-ink-soft">
                   {count === 0 ? 'Scan an item to start this section.' : 'Open and edit these pieces.'}
                 </p>
                 <span className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-ink transition-colors group-hover:text-beige-deep">
-                  View {CATEGORY_LABELS[cat].toLowerCase()}
+                  View wardrobe
                   <Icon name="arrow-right" size={15} />
                 </span>
               </Link>

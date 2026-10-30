@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { OutfitComposition } from '../lib/types'
+import { slotForCategory } from '../lib/types'
 import { useOutfit } from '../stores/OutfitContext'
 import { useWardrobe } from '../stores/WardrobeContext'
 import { OutfitShowcase } from '../components/tryon/OutfitShowcase'
@@ -74,7 +75,10 @@ export function TryOnPage() {
     setComposing(true)
     // Compose the *next* outfit — state hasn't updated yet, so apply the
     // selection locally so the newly picked item is included.
-    const slot = garment.category === 'shirt' ? 'top' : garment.category === 'pants' ? 'bottom' : 'shoes'
+    const slot = slotForCategory(garment.category)
+    // Categories without a slot (dress, jumpsuit, ethnic, accessory) are
+    // never forced into the current three-slot composition.
+    if (!slot) return
     const nextOutfit: OutfitComposition = { ...currentOutfit, [slot]: garment }
     void tryOnService.compose(nextOutfit).then(() => {
       // brief fade to suggest composition

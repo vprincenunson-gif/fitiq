@@ -16,9 +16,32 @@ interface WardrobeContextValue {
   removeGarment: (id: string) => void
   toggleFavorite: (id: string) => void
   garmentById: (id: string) => Garment | undefined
+  /** Replace the whole wardrobe after a cloud pull. */
+  hydrateGarments: (garments: Garment[]) => void
 }
 
 const WardrobeContext = createContext<WardrobeContextValue | null>(null)
+
+/** Backfill wear status and repair corrupted values from older versions. */
+function normalizeGarments(parsed: Garment[]): Garment[] {
+  for (const g of parsed) {
+    if (!g.wearStatus || !WEAR_STATUS_VALUES.includes(g.wearStatus)) {
+      g.wearStatus = DEFAULT_WEAR_STATUS
+    }
+    // Drop corrupted wear-tracking values so counts stay trustworthy.
+    if (typeof g.wearCount !== 'number' || !Number.isFinite(g.wearCount) || g.wearCount < 0) {
+      delete g.wearCount
+    }
+    if (
+      g.lastWornAt !== undefined &&
+      g.lastWornAt !== null &&
+      (typeof g.lastWornAt !== 'string' || Number.isNaN(Date.parse(g.lastWornAt)))
+    ) {
+      delete g.lastWornAt
+    }
+  }
+  return parsed
+}
 
 function loadInitial(): { garments: Garment[]; ready: boolean } {
   try {
@@ -26,25 +49,7 @@ function loadInitial(): { garments: Garment[]; ready: boolean } {
     if (raw) {
       const parsed = JSON.parse(raw) as Garment[]
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Backfill wear status for items stored before the feature existed,
-        // and repair any corrupted values, so persistence stays clean.
-        for (const g of parsed) {
-          if (!g.wearStatus || !WEAR_STATUS_VALUES.includes(g.wearStatus)) {
-            g.wearStatus = DEFAULT_WEAR_STATUS
-          }
-          // Drop corrupted wear-tracking values so counts stay trustworthy.
-          if (typeof g.wearCount !== 'number' || !Number.isFinite(g.wearCount) || g.wearCount < 0) {
-            delete g.wearCount
-          }
-          if (
-            g.lastWornAt !== undefined &&
-            g.lastWornAt !== null &&
-            (typeof g.lastWornAt !== 'string' || Number.isNaN(Date.parse(g.lastWornAt)))
-          ) {
-            delete g.lastWornAt
-          }
-        }
-        return { garments: parsed, ready: true }
+        return { garments: normalizeGarments(parsed), ready: true }
       }
     }
   } catch {
@@ -79,11 +84,15 @@ export function WardrobeProvider({ children }: { children: ReactNode }) {
   }, [ready, garments])
 
   const addGarment = useCallback((garment: Garment) => {
-    setGarments((prev) => [garment, ...prev])
+    setGarments((prev) => [{ ...garment, updatedAt: garment.updatedAt ?? new Date().toISOString() }, ...prev])
   }, [])
 
   const updateGarment = useCallback((id: string, patch: Partial<Garment>) => {
-    setGarments((prev) => prev.map((g) => (g.id === id ? { ...g, ...patch } : g)))
+    setGarments((prev) =>
+      prev.map((g) =>
+        g.id === id ? { ...g, ...patch, updatedAt: patch.updatedAt ?? new Date().toISOString() } : g,
+      ),
+    )
   }, [])
 
   const removeGarment = useCallback((id: string) => {
@@ -92,8 +101,17 @@ export function WardrobeProvider({ children }: { children: ReactNode }) {
 
   const toggleFavorite = useCallback((id: string) => {
     setGarments((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, favorite: !g.favorite } : g)),
+      prev.map((g) =>
+        g.id === id
+          ? { ...g, favorite: !g.favorite, updatedAt: new Date().toISOString() }
+          : g,
+      ),
     )
+  }, [])
+
+  const hydrateGarments = useCallback((next: Garment[]) => {
+    setGarments(normalizeGarments(next))
+    setReady(true)
   }, [])
 
   const garmentById = useCallback(
@@ -102,8 +120,26 @@ export function WardrobeProvider({ children }: { children: ReactNode }) {
   )
 
   const value = useMemo(
-    () => ({ garments, ready, addGarment, updateGarment, removeGarment, toggleFavorite, garmentById }),
-    [garments, ready, addGarment, updateGarment, removeGarment, toggleFavorite, garmentById],
+    () => ({
+      garments,
+      ready,
+      addGarment,
+      updateGarment,
+      removeGarment,
+      toggleFavorite,
+      garmentById,
+      hydrateGarments,
+    }),
+    [
+      garments,
+      ready,
+      addGarment,
+      updateGarment,
+      removeGarment,
+      toggleFavorite,
+      garmentById,
+      hydrateGarments,
+    ],
   )
 
   return <WardrobeContext.Provider value={value}>{children}</WardrobeContext.Provider>

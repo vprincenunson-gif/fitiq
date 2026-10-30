@@ -18,6 +18,13 @@ export type IconName =
   | 'trash'
   | 'sparkle'
   | 'insights'
+  | 'user'
+  | 'cloud'
+  | 'cloud-off'
+  | 'logout'
+  | 'mail'
+  | 'lock'
+  | 'refresh'
 
 const PATHS: Record<IconName, React.ReactNode> = {
   camera: (
@@ -56,6 +63,27 @@ const PATHS: Record<IconName, React.ReactNode> = {
   ),
   insights: (
     <path d="M4 20v-7M10 20V5M16 20v-9M2 20h20" />
+  ),
+  user: (
+    <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 20.5c.7-3.8 3.7-6 7.5-6s6.8 2.2 7.5 6" />
+  ),
+  cloud: (
+    <path d="M7.5 18.5a4 4 0 0 1-.6-7.95A5.5 5.5 0 0 1 17.7 9.4a4.55 4.55 0 0 1 .8 9.1H7.5Z" />
+  ),
+  'cloud-off': (
+    <path d="M7.5 18.5a4 4 0 0 1-.6-7.95A5.5 5.5 0 0 1 14 7.2M17.7 9.4a4.55 4.55 0 0 1 .8 9.1H8M4 4l16 16" />
+  ),
+  logout: (
+    <path d="M14 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 8l-4 4 4 4M6 12h9" />
+  ),
+  mail: (
+    <path d="M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1ZM3.5 7.5 12 13l8.5-5.5" />
+  ),
+  lock: (
+    <path d="M6 10h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1ZM8 10V7a4 4 0 0 1 8 0v3M12 14v2" />
+  ),
+  refresh: (
+    <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" />
   ),
 }
 

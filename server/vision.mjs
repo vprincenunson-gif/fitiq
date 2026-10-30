@@ -25,8 +25,33 @@ const MAX_IMAGE_BYTES = 2_000_000
 const MAX_DATA_URL_CHARS = 2_800_000
 const VISION_TIMEOUT_MS = 12_000
 
-const CATEGORIES = ['shirt', 'pants', 'shoes']
-const CATEGORY_SINGULAR = { shirt: 'Shirt', pants: 'Pants', shoes: 'Shoes' }
+const CATEGORIES = [
+  'shirt',
+  'blouse',
+  'top',
+  'pants',
+  'jeans',
+  'skirt',
+  'dress',
+  'jumpsuit',
+  'ethnic',
+  'shoes',
+  'accessory',
+]
+
+const CATEGORY_SINGULAR = {
+  shirt: 'Shirt',
+  blouse: 'Blouse',
+  top: 'Top',
+  pants: 'Pants',
+  jeans: 'Jeans',
+  skirt: 'Skirt',
+  dress: 'Dress',
+  jumpsuit: 'Jumpsuit',
+  ethnic: 'Ethnic Wear',
+  shoes: 'Shoes',
+  accessory: 'Accessory',
+}
 
 /**
  * Model colour vocabulary → internal token + display label. Several model
@@ -66,11 +91,13 @@ const PROMPT = [
   "You are FITIQ's garment vision classifier.",
   'Analyse ONLY the single garment shown in the photo. Ignore people, hangers, tags, watermarks, floor and background.',
   'Report the garment\'s actual dominant colour, not the background colour.',
+  'Classify by garment type only. Never infer or assume the wearer\'s gender.',
   'Respond with STRICT JSON only, no markdown, no extra text, in this exact shape:',
-  '{"category":"<shirt|pants|shoes>","color":"<colour token>","colorLabel":"<Colour>","name":"<Generic name>","confidence":<number 0-1>}',
+  '{"category":"<category id>","color":"<colour token>","colorLabel":"<Colour>","name":"<Generic name>","confidence":<number 0-1>}',
   `The colour token MUST be one of: white, black, gray, charcoal, oat, beige, navy, blue, green, olive, red, clay, pink, purple, sand, tan, brown, yellow, denim.`,
-  'category MUST be exactly one of: shirt, pants, shoes.',
-  'name MUST be generic, e.g. "Blue Shirt", "Charcoal Pants", "Black Shoes". Never include brands or invented details.',
+  'category MUST be exactly one of: shirt, blouse, top, pants, jeans, skirt, dress, jumpsuit, ethnic, shoes, accessory.',
+  'Use shirt for a collared button-up, blouse for a fluid feminine-cut top, top for t-shirts/knitwear/camisoles, ethnic for kurtas, sarees, lehengas and similar traditional pieces, and accessory for belts, bags, scarves, jewellery and hats.',
+  'name MUST be generic, e.g. "Blue Shirt", "Charcoal Jeans", "Black Shoes". Never include brands or invented details.',
   'confidence MUST be a decimal between 0 and 1.',
 ].join('\n')
 

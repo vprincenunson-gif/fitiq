@@ -17,6 +17,8 @@ interface OutfitHistoryContextValue {
   history: HistoryEntry[]
   record: (vibe: Vibe, garmentIds: string[]) => void
   remove: (id: string) => void
+  /** Replace history (used when restoring guest data). */
+  hydrateHistory: (entries: HistoryEntry[]) => void
 }
 
 const OutfitHistoryContext = createContext<OutfitHistoryContextValue | null>(null)
@@ -74,7 +76,7 @@ export function OutfitHistoryProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo(
-    () => ({ history, record, remove }),
+    () => ({ history, record, remove, hydrateHistory: setHistory }),
     [history, record, remove],
   )
 

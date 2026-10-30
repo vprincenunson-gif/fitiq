@@ -4,7 +4,6 @@ import { useWardrobe } from '../stores/WardrobeContext'
 import { useOutfit } from '../stores/OutfitContext'
 import { useWear } from '../stores/WearContext'
 import {
-  PlannerProvider,
   isSameLocalDay,
   localDateKey,
   usePlanner,
@@ -195,7 +194,7 @@ function PlannerInner() {
       </div>
 
       <p className="mt-6 text-center text-[0.6875rem] uppercase tracking-[0.18em] text-ink-faint">
-        Plans live in your browser only — saved looks are reused, never re-analysed.
+        Plans save on this device and sync privately when you sign in — saved looks are reused, never re-analysed.
       </p>
 
       <AssignOutfitDialog
@@ -233,9 +232,5 @@ function PlannerInner() {
 }
 
 export function PlannerPage() {
-  return (
-    <PlannerProvider>
-      <PlannerInner />
-    </PlannerProvider>
-  )
+  return <PlannerInner />
 }

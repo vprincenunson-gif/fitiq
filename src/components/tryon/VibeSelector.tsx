@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import type { Garment, GarmentCategory, OutfitComposition, StyleProfile } from '../../lib/types'
-import { isWearable } from '../../lib/types'
+import { isWearable, slotForCategory } from '../../lib/types'
+import type { OutfitSlot } from '../../lib/types'
 import { RecommendationError, VIBES, VIBE_ORDER, normalizeRecommendation, toDescriptor, type RecommendedOutfit, type Vibe, type WeatherContext } from '../../services/recommend'
 import { outfitRecommendationService } from '../../services'
 import { Button } from '../ui/Button'
@@ -59,10 +60,18 @@ export function VibeSelector({ wardrobe, current, onAdd, onOutfitGenerated, weat
     setError(null)
     // Only garments currently ready to wear are eligible — items marked
     // Needs ironing / Worn / In laundry stay out of every recommendation.
-    const eligible = wardrobe.filter(isWearable)
+    // Categories with no composition slot (dress, jumpsuit, ethnic wear,
+    // accessory) are excluded so they are never forced into the current
+    // three-slot builder; their styling logic comes later.
+    const eligible = wardrobe.filter(
+      (garment) => isWearable(garment) && slotForCategory(garment.category) !== null,
+    )
     if (eligible.length === 0) {
+      const wearable = wardrobe.filter(isWearable)
       setError(
-        'Nothing is ready to wear right now — set at least one item to “Ready” in your Wardrobe, then build your fit again.',
+        wearable.length > 0
+          ? 'Nothing in your wardrobe maps to the current top / bottom / shoes builder yet — those pieces stay in your wardrobe until their styling logic is ready.'
+          : 'Nothing is ready to wear right now — set at least one item to “Ready” in your Wardrobe, then build your fit again.',
       )
       setWorking(false)
       return
@@ -86,10 +95,16 @@ export function VibeSelector({ wardrobe, current, onAdd, onOutfitGenerated, weat
         new Set(eligible.map((g) => g.id)),
       )
       const appliedIds: string[] = []
-      ;[recommended.topId, recommended.bottomId, recommended.shoesId].forEach((id) => {
+      const picks: [string | null, OutfitSlot][] = [
+        [recommended.topId, 'top'],
+        [recommended.bottomId, 'bottom'],
+        [recommended.shoesId, 'shoes'],
+      ]
+      picks.forEach(([id, slot]) => {
         if (!id) return
         const garment = eligible.find((g) => g.id === id)
-        if (garment) {
+        // Never place a piece in a slot its category cannot fill.
+        if (garment && slotForCategory(garment.category) === slot) {
           onAdd({ id: garment.id, category: garment.category })
           appliedIds.push(garment.id)
         }

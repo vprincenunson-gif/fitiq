@@ -16,6 +16,8 @@ export interface PlannedDay {
   outfitId: string | null
   /** Optional occasion for the day ('casual', 'formal', …). */
   occasion: Vibe | null
+  /** ISO timestamp of the last edit; used to resolve cloud conflicts. */
+  updatedAt?: string
 }
 
 export type PlannerPlan = Record<string, PlannedDay>
@@ -27,6 +29,8 @@ interface PlannerContextValue {
   assignOutfit: (dateKey: string, outfitId: string | null) => void
   setOccasion: (dateKey: string, occasion: Vibe | null) => void
   clearDay: (dateKey: string) => void
+  /** Replace the whole plan after a cloud pull. */
+  hydratePlan: (plan: PlannerPlan) => void
 }
 
 function readPlan(): PlannerPlan {
@@ -43,6 +47,7 @@ function readPlan(): PlannerPlan {
       clean[key] = {
         outfitId: typeof day.outfitId === 'string' ? day.outfitId : null,
         occasion: typeof day.occasion === 'string' ? (day.occasion as Vibe) : null,
+        updatedAt: typeof day.updatedAt === 'string' ? day.updatedAt : undefined,
       }
     }
     return clean
@@ -100,7 +105,14 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     setPlan((prev) => {
       const current = prev[dateKey]
       if (!outfitId && !(current?.outfitId ?? false)) return prev
-      return { ...prev, [dateKey]: { outfitId, occasion: current?.occasion ?? null } }
+      return {
+        ...prev,
+        [dateKey]: {
+          outfitId,
+          occasion: current?.occasion ?? null,
+          updatedAt: new Date().toISOString(),
+        },
+      }
     })
   }, [])
 
@@ -108,7 +120,14 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     setPlan((prev) => {
       const current = prev[dateKey]
       if (!occasion && !(current?.occasion ?? false)) return prev
-      return { ...prev, [dateKey]: { outfitId: current?.outfitId ?? null, occasion } }
+      return {
+        ...prev,
+        [dateKey]: {
+          outfitId: current?.outfitId ?? null,
+          occasion,
+          updatedAt: new Date().toISOString(),
+        },
+      }
     })
   }, [])
 
@@ -121,9 +140,11 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const hydratePlan = useCallback((next: PlannerPlan) => setPlan(next), [])
+
   const value = useMemo(
-    () => ({ plan, assignOutfit, setOccasion, clearDay }),
-    [plan, assignOutfit, setOccasion, clearDay],
+    () => ({ plan, assignOutfit, setOccasion, clearDay, hydratePlan }),
+    [plan, assignOutfit, setOccasion, clearDay, hydratePlan],
   )
 
   return <PlannerContext.Provider value={value}>{children}</PlannerContext.Provider>

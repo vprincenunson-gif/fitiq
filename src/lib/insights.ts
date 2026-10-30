@@ -1,6 +1,7 @@
 import type { Garment, GarmentCategory, WearStatus } from './types'
 import {
   CATEGORY_LABELS,
+  GARMENT_CATEGORIES,
   WEAR_STATUS_LABELS,
   WEAR_STATUS_VALUES,
   garmentLastWornAt,
@@ -221,7 +222,7 @@ export function buildWardrobeInsights(
     count: monthCounts.get(month.key) ?? 0,
   }))
 
-  const categoryData = (['shirt', 'pants', 'shoes'] as GarmentCategory[]).map((category) => {
+  const categoryData = GARMENT_CATEGORIES.map((category) => {
     const pieces = ranked.filter((item) => item.garment.category === category)
     const categoryWears = pieces.reduce((sum, item) => sum + item.wearCount, 0)
     const mostWornPiece = [...pieces].sort(byMostWorn)[0] ?? null

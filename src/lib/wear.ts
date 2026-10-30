@@ -1,5 +1,5 @@
 import type { GarmentWearStats } from './types'
-import { garmentLastWornAt, garmentWearCount } from './types'
+import { garmentLastWornAt, garmentWearCount } from './types.ts'
 
 /* ────────────────────────────────────────────────────────────────────────
    Wear tracking helpers — small, pure utilities shared by the wardrobe,

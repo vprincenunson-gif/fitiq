@@ -1,6 +1,18 @@
-import type { Garment, GarmentCategory, GarmentColor, GarmentFit, StyleProfile } from '../lib/types'
-import { garmentLastWornAt, garmentWearCount } from '../lib/types'
-import { daysSinceWorn } from '../lib/wear'
+import type {
+  Garment,
+  GarmentCategory,
+  GarmentColor,
+  GarmentFit,
+  OutfitSlot,
+  StyleProfile,
+} from '../lib/types.ts'
+import {
+  SLOT_KEY_BY_SLOT,
+  garmentLastWornAt,
+  garmentWearCount,
+  slotForCategory,
+} from '../lib/types.ts'
+import { daysSinceWorn } from '../lib/wear.ts'
 
 /**
  * Mood/style direction for the AI Outfit Selector.
@@ -286,18 +298,23 @@ export class MockOutfitRecommendationService implements OutfitRecommendationServ
   async recommend(request: OutfitRecommendationRequest): Promise<RecommendedOutfit> {
     const profile = VIBES[request.vibe]
     const excluded = new Set(request.exclude ?? [])
-    const byCategory = (cat: GarmentCategory) =>
-      request.wardrobe.filter((g) => g.category === cat)
+    // Slot-aware: every top-compatible category (shirt/blouse/top) competes
+    // for the top slot, and bottoms (pants/jeans/skirt) for the bottom slot.
+    // Legacy wardrobes behave exactly as before.
+    const bySlot = (slot: OutfitSlot) =>
+      request.wardrobe.filter((g) => slotForCategory(g.category) === slot)
 
-    const pick = (cat: GarmentCategory): GarmentDescriptor | null => {
-      let candidates = byCategory(cat)
+    const pick = (slot: OutfitSlot): GarmentDescriptor | null => {
+      let candidates = bySlot(slot)
       if (candidates.length === 0) return null
       // "Try Another": drop excluded ids, but only when alternatives
-      // remain for this category — never leave the slot empty over it.
+      // remain for this slot — never leave the slot empty over it.
       if (excluded.size > 0) {
         const remaining = candidates.filter((g) => !excluded.has(g.id))
         if (remaining.length > 0) candidates = remaining
       }
+      // Profile preferences are keyed by the legacy slot key.
+      const cat = SLOT_KEY_BY_SLOT[slot]
       const current = request.current[cat]
 
       const score = (g: GarmentDescriptor): number => {
@@ -363,8 +380,8 @@ export class MockOutfitRecommendationService implements OutfitRecommendationServ
       return best
     }
 
-    const top = pick('shirt')
-    const bottom = pick('pants')
+    const top = pick('top')
+    const bottom = pick('bottom')
     const shoes = pick('shoes')
 
     const named: string[] = []

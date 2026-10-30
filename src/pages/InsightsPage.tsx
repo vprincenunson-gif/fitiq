@@ -465,9 +465,11 @@ export function InsightsPage() {
           </span>
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-3">
-          {categories.map((category) => (
-            <CategoryCard key={category.category} category={category} />
-          ))}
+          {categories
+            .filter((category) => category.pieces > 0)
+            .map((category) => (
+              <CategoryCard key={category.category} category={category} />
+            ))}
         </div>
       </section>
 

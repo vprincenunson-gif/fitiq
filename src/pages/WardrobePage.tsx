@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import type { Garment, WearStatus } from '../lib/types'
+import { isGarmentCategory } from '../lib/types'
 import { useWardrobe } from '../stores/WardrobeContext'
 import { CategoryFilter, type CategoryFilterValue } from '../components/wardrobe/CategoryFilter'
 import { WardrobeGrid } from '../components/wardrobe/WardrobeGrid'
@@ -14,8 +15,7 @@ export function WardrobePage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const urlCat = searchParams.get('cat')
 
-  const initialFilter: CategoryFilterValue =
-    urlCat === 'shirt' || urlCat === 'pants' || urlCat === 'shoes' ? urlCat : 'all'
+  const initialFilter: CategoryFilterValue = isGarmentCategory(urlCat) ? urlCat : 'all'
 
   const [filter, setFilter] = useState<CategoryFilterValue>(initialFilter)
 

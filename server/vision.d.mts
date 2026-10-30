@@ -7,7 +7,18 @@ export declare const GROQ_VISION_MODEL: string
 
 export type DetectResult =
   | {
-      category: 'shirt' | 'pants' | 'shoes'
+      category:
+        | 'shirt'
+        | 'blouse'
+        | 'top'
+        | 'pants'
+        | 'jeans'
+        | 'skirt'
+        | 'dress'
+        | 'jumpsuit'
+        | 'ethnic'
+        | 'shoes'
+        | 'accessory'
       color: string
       colorLabel: string
       name: string

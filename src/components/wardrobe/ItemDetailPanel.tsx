@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Garment, GarmentCategory, GarmentColor, GarmentFit } from '../../lib/types'
-import { CATEGORY_LABELS } from '../../lib/types'
+import { CATEGORY_LABELS, GARMENT_CATEGORIES, slotForCategory } from '../../lib/types'
 import { formatWornDate, garmentWearStats } from '../../lib/wear'
 import { Button } from '../ui/Button'
 import { Icon } from '../ui/Icon'
@@ -33,6 +33,8 @@ interface Draft {
 export function ItemDetailPanel({ garment, onUpdate, onDelete, onAddToOutfit }: ItemDetailPanelProps) {
   const [editing, setEditing] = useState(false)
   const wear = garmentWearStats(garment)
+  // Dresses, jumpsuits, ethnic wear and accessories have no outfit slot yet.
+  const canCompose = slotForCategory(garment.category) !== null
   const [draft, setDraft] = useState<Draft>(() => ({
     name: garment.name,
     category: garment.category,
@@ -149,7 +151,7 @@ export function ItemDetailPanel({ garment, onUpdate, onDelete, onAddToOutfit }: 
               onChange={(e) => setDraft({ ...draft, category: e.target.value as GarmentCategory })}
               className="w-full border-b border-line bg-paper-raised py-2 text-sm text-ink outline-none focus:border-beige-deep"
             >
-              {(Object.keys(CATEGORY_LABELS) as GarmentCategory[]).map((c) => (
+              {GARMENT_CATEGORIES.map((c) => (
                 <option key={c} value={c}>
                   {CATEGORY_LABELS[c]}
                 </option>
@@ -275,10 +277,16 @@ export function ItemDetailPanel({ garment, onUpdate, onDelete, onAddToOutfit }: 
 
       {/* Actions */}
       <div className="mt-8 flex flex-col gap-3">
-        <Button onClick={onAddToOutfit} fullWidth>
+        <Button onClick={onAddToOutfit} disabled={!canCompose} fullWidth>
           <Icon name="hanger" size={16} />
           Add to outfit
         </Button>
+        {!canCompose && (
+          <p className="text-center text-[0.6875rem] leading-relaxed text-ink-faint">
+            {CATEGORY_LABELS[garment.category]} aren’t part of the three-slot outfit builder yet.
+            This piece stays in your wardrobe, filters and wear tracking.
+          </p>
+        )}
         <Button variant="ghost" onClick={() => onUpdate({ favorite: !garment.favorite })} fullWidth>
           <Icon name="heart" size={16} />
           {garment.favorite ? 'Remove from favorites' : 'Add to favorites'}

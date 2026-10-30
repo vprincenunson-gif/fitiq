@@ -59,6 +59,8 @@ interface WearContextValue {
   wornEntryFor: (dateKey: string, outfitId: string) => WearLogEntry | undefined
   /** How many times a saved look has been worn, and when it last was. */
   outfitWear: (outfitId: string) => OutfitWearSummary
+  /** Replace the whole log after a cloud pull. */
+  hydrateLog: (entries: WearLogEntry[]) => void
 }
 
 const WearContext = createContext<WearContextValue | null>(null)
@@ -172,7 +174,7 @@ export function WearProvider({ children }: { children: ReactNode }) {
   )
 
   const value = useMemo(
-    () => ({ log, markWorn, wornEntryFor, outfitWear }),
+    () => ({ log, markWorn, wornEntryFor, outfitWear, hydrateLog: setLog }),
     [log, markWorn, wornEntryFor, outfitWear],
   )
 

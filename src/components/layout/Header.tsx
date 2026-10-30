@@ -1,6 +1,7 @@
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { Button } from '../ui/Button'
 import { Icon } from '../ui/Icon'
+import { AccountMenu } from '../auth/AccountMenu'
 
 const NAV = [
   { to: '/wardrobe', label: 'Wardrobe' },
@@ -50,13 +51,17 @@ export function Header() {
               Scan
             </Button>
           </Link>
+          <AccountMenu />
         </nav>
 
-        <Link to="/scan" className="md:hidden" aria-label="Scan an item">
-          <Button size="sm" variant="ghost">
-            <Icon name="camera" size={16} />
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3 md:hidden">
+          <AccountMenu />
+          <Link to="/scan" aria-label="Scan an item">
+            <Button size="sm" variant="ghost">
+              <Icon name="camera" size={16} />
+            </Button>
+          </Link>
+        </div>
       </div>
     </header>
   )

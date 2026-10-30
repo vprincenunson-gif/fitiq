@@ -1,10 +1,9 @@
 import type { DetectedGarment, GarmentCategory, GarmentColor } from '../lib/types'
-import { genericGarmentName } from '../lib/types'
+import { genericGarmentName, isGarmentCategory } from '../lib/types'
 import { LocalDetectionService, type GarmentDetectionService, type DetectionOptions } from './detection'
 
 const VISION_TIMEOUT_MS = 16_000
 
-const CATEGORIES = new Set<GarmentCategory>(['shirt', 'pants', 'shoes'])
 const COLORS = new Set<GarmentColor>([
   'white', 'black', 'oat', 'beige', 'charcoal', 'navy', 'blue',
   'olive', 'clay', 'sand', 'tan', 'denim',
@@ -51,7 +50,7 @@ export class RemoteVisionDetectionService implements GarmentDetectionService {
     const data = (await response.json()) as VisionResponse
     const { category, color, colorLabel, name, confidence } = data
 
-    if (typeof category !== 'string' || !CATEGORIES.has(category as GarmentCategory)) {
+    if (!isGarmentCategory(category)) {
       throw new Error('vision-invalid-category')
     }
     if (typeof color !== 'string' || !COLORS.has(color as GarmentColor)) {

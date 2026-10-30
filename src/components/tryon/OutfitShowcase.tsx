@@ -8,8 +8,8 @@ interface OutfitShowcaseProps {
 }
 
 const SLOTS = [
-  { key: 'top', number: '01', category: 'Shirt', label: 'Top' },
-  { key: 'bottom', number: '02', category: 'Pants', label: 'Bottom' },
+  { key: 'top', number: '01', category: 'Top', label: 'Top' },
+  { key: 'bottom', number: '02', category: 'Bottom', label: 'Bottom' },
   { key: 'shoes', number: '03', category: 'Shoes', label: 'Shoes' },
 ] as const
 

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { GarmentCategory, Outfit, OutfitComposition } from '../lib/types'
+import type { GarmentCategory, Outfit, OutfitComposition, OutfitSlotKey } from '../lib/types'
+import { OUTFIT_SLOT_KEYS, slotKeyForCategory } from '../lib/types'
 import { useWardrobe } from './WardrobeContext'
 
 const OUTFIT_KEY = 'fitiq.outfit.current'
@@ -9,11 +10,20 @@ const SAVED_KEY = 'fitiq.outfits.saved'
 interface OutfitContextValue {
   currentOutfit: OutfitComposition
   savedOutfits: Outfit[]
-  addToOutfit: (garment: { id: string; category: GarmentCategory }) => void
-  removeFromOutfit: (category: GarmentCategory) => void
+  /**
+   * Add a piece to its composition slot. Returns false when the category has
+   * no compatible slot yet (dress, jumpsuit, ethnic wear, accessory) — those
+   * items stay in the wardrobe and are never forced into a slot.
+   */
+  addToOutfit: (garment: { id: string; category: GarmentCategory }) => boolean
+  removeFromOutfit: (slotKey: OutfitSlotKey) => void
   clearOutfit: () => void
   saveOutfit: (name: string) => void
   loadOutfit: (outfit: Outfit) => void
+  /** Replace saved looks after a cloud pull. */
+  hydrateSavedOutfits: (outfits: Outfit[]) => void
+  /** Replace the in-progress look (used when restoring guest data). */
+  hydrateCurrentOutfit: (ids: Partial<Record<OutfitSlotKey, string>>) => void
 }
 
 const OutfitContext = createContext<OutfitContextValue | null>(null)
@@ -38,7 +48,7 @@ export function OutfitProvider({ children }: { children: ReactNode }) {
   const { garmentById } = useWardrobe()
 
   const [currentIds, setCurrentIds] = useState<
-    Partial<Record<GarmentCategory, string>>
+    Partial<Record<OutfitSlotKey, string>>
   >(() => readJSON(OUTFIT_KEY, {}))
 
   const [savedOutfits, setSavedOutfits] = useState<Outfit[]>(() =>
@@ -69,13 +79,16 @@ export function OutfitProvider({ children }: { children: ReactNode }) {
   }, [currentIds, garmentById])
 
   const addToOutfit = useCallback((garment: { id: string; category: GarmentCategory }) => {
-    setCurrentIds((prev) => ({ ...prev, [garment.category]: garment.id }))
+    const slotKey = slotKeyForCategory(garment.category)
+    if (!slotKey) return false
+    setCurrentIds((prev) => ({ ...prev, [slotKey]: garment.id }))
+    return true
   }, [])
 
-  const removeFromOutfit = useCallback((category: GarmentCategory) => {
+  const removeFromOutfit = useCallback((slotKey: OutfitSlotKey) => {
     setCurrentIds((prev) => {
       const next = { ...prev }
-      delete next[category]
+      delete next[slotKey]
       return next
     })
   }, [])
@@ -85,9 +98,8 @@ export function OutfitProvider({ children }: { children: ReactNode }) {
   const saveOutfit = useCallback(
     (name: string) => {
       // Canonical order so loadOutfit can map by index: [top, bottom, shoes].
-      const order: GarmentCategory[] = ['shirt', 'pants', 'shoes']
-      const ids = order
-        .map((cat) => currentIds[cat])
+      const ids = OUTFIT_SLOT_KEYS
+        .map((slotKey) => currentIds[slotKey])
         .filter((id): id is string => Boolean(id))
       if (ids.length === 0) return
       const outfit: Outfit = {
@@ -95,18 +107,27 @@ export function OutfitProvider({ children }: { children: ReactNode }) {
         name,
         garmentIds: ids,
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       }
       setSavedOutfits((prev) => [outfit, ...prev])
     },
     [currentIds],
   )
 
+  const hydrateSavedOutfits = useCallback((outfits: Outfit[]) => {
+    setSavedOutfits(outfits)
+  }, [])
+
+  const hydrateCurrentOutfit = useCallback(
+    (ids: Partial<Record<OutfitSlotKey, string>>) => setCurrentIds(ids),
+    [],
+  )
+
   const loadOutfit = useCallback((outfit: Outfit) => {
-    const map: Partial<Record<GarmentCategory, string>> = {}
-    const order: GarmentCategory[] = ['shirt', 'pants', 'shoes']
-    order.forEach((cat, i) => {
+    const map: Partial<Record<OutfitSlotKey, string>> = {}
+    OUTFIT_SLOT_KEYS.forEach((slotKey, i) => {
       const id = outfit.garmentIds[i]
-      if (id) map[cat] = id
+      if (id) map[slotKey] = id
     })
     setCurrentIds(map)
   }, [])
@@ -120,6 +141,8 @@ export function OutfitProvider({ children }: { children: ReactNode }) {
       clearOutfit,
       saveOutfit,
       loadOutfit,
+      hydrateSavedOutfits,
+      hydrateCurrentOutfit,
     }),
     [
       currentOutfit,
@@ -129,6 +152,8 @@ export function OutfitProvider({ children }: { children: ReactNode }) {
       clearOutfit,
       saveOutfit,
       loadOutfit,
+      hydrateSavedOutfits,
+      hydrateCurrentOutfit,
     ],
   )
 

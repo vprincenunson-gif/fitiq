@@ -26,7 +26,7 @@ export class MockTryOnService implements TryOnService {
     const layers: OutfitLayer[] = []
     if (outfit.top) {
       layers.push({
-        category: 'shirt',
+        category: outfit.top.category,
         image: outfit.top.image,
         garmentId: outfit.top.id,
         label: outfit.top.name,
@@ -34,7 +34,7 @@ export class MockTryOnService implements TryOnService {
     }
     if (outfit.bottom) {
       layers.push({
-        category: 'pants',
+        category: outfit.bottom.category,
         image: outfit.bottom.image,
         garmentId: outfit.bottom.id,
         label: outfit.bottom.name,
@@ -42,7 +42,7 @@ export class MockTryOnService implements TryOnService {
     }
     if (outfit.shoes) {
       layers.push({
-        category: 'shoes',
+        category: outfit.shoes.category,
         image: outfit.shoes.image,
         garmentId: outfit.shoes.id,
         label: outfit.shoes.name,

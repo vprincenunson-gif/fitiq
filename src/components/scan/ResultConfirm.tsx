@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { DetectedGarment, GarmentCategory } from '../../lib/types'
-import { CATEGORY_LABELS, genericGarmentName } from '../../lib/types'
+import { CATEGORY_LABELS, GARMENT_CATEGORIES, genericGarmentName } from '../../lib/types'
 import { Button } from '../ui/Button'
 import { Icon } from '../ui/Icon'
 
@@ -80,7 +80,7 @@ export function ResultConfirm({ detected, capturedImage, onAdd, onRescan }: Resu
                 onChange={(e) => changeCategory(e.target.value as GarmentCategory)}
                 className="w-full border-b border-line bg-paper-raised py-2 text-sm text-ink outline-none focus:border-beige-deep"
               >
-                {(Object.keys(CATEGORY_LABELS) as GarmentCategory[]).map((c) => (
+                {GARMENT_CATEGORIES.map((c) => (
                   <option key={c} value={c}>
                     {CATEGORY_LABELS[c]}
                   </option>

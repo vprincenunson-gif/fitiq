@@ -2,7 +2,84 @@
    FITIQ domain types
    ───────────────────────────────────────────────────── */
 
-export type GarmentCategory = 'shirt' | 'pants' | 'shoes'
+/*
+ * Gender-inclusive category set. The original ids (`shirt`, `pants`, `shoes`)
+ * are kept exactly as-is so existing local data, saved looks, cloud rows and
+ * outfit slots keep working without a rewrite.
+ */
+export type GarmentCategory =
+  | 'shirt'
+  | 'blouse'
+  | 'top'
+  | 'pants'
+  | 'jeans'
+  | 'skirt'
+  | 'dress'
+  | 'jumpsuit'
+  | 'ethnic'
+  | 'shoes'
+  | 'accessory'
+
+/** Canonical display/filter order. */
+export const GARMENT_CATEGORIES: GarmentCategory[] = [
+  'shirt',
+  'blouse',
+  'top',
+  'pants',
+  'jeans',
+  'skirt',
+  'dress',
+  'jumpsuit',
+  'ethnic',
+  'shoes',
+  'accessory',
+]
+
+export function isGarmentCategory(value: unknown): value is GarmentCategory {
+  return typeof value === 'string' && (GARMENT_CATEGORIES as string[]).includes(value)
+}
+
+/** The three slots the current outfit composer and recommendations support. */
+export type OutfitSlot = 'top' | 'bottom' | 'shoes'
+
+/**
+ * Which composition slot a category can fill. Categories absent from this map
+ * (dresses, jumpsuits, ethnic wear, accessories) are wardrobe-only until
+ * compatible styling logic exists — they are never forced into a slot.
+ */
+export const CATEGORY_SLOT: Partial<Record<GarmentCategory, OutfitSlot>> = {
+  shirt: 'top',
+  blouse: 'top',
+  top: 'top',
+  pants: 'bottom',
+  jeans: 'bottom',
+  skirt: 'bottom',
+  shoes: 'shoes',
+}
+
+export function slotForCategory(category: GarmentCategory): OutfitSlot | null {
+  return CATEGORY_SLOT[category] ?? null
+}
+
+/**
+ * Legacy keys for the in-progress outfit (localStorage + guest snapshot).
+ * New top/bottom categories share the existing `shirt`/`pants` keys so an
+ * existing saved look or in-flight sync payload is read without migration.
+ */
+export type OutfitSlotKey = 'shirt' | 'pants' | 'shoes'
+
+export const OUTFIT_SLOT_KEYS: OutfitSlotKey[] = ['shirt', 'pants', 'shoes']
+
+export const SLOT_KEY_BY_SLOT: Record<OutfitSlot, OutfitSlotKey> = {
+  top: 'shirt',
+  bottom: 'pants',
+  shoes: 'shoes',
+}
+
+export function slotKeyForCategory(category: GarmentCategory): OutfitSlotKey | null {
+  const slot = slotForCategory(category)
+  return slot ? SLOT_KEY_BY_SLOT[slot] : null
+}
 
 export type GarmentColor =
   | 'white'
@@ -91,13 +168,20 @@ export interface Garment {
   wearCount?: number
   /** ISO timestamp of the last confirmed wear; absent/null = never worn. */
   lastWornAt?: string | null
-  /** Garment image: SVG art path (e.g. "/garments/shirt-crisp-white.svg") or a captured camera photo data URL */
+  /** Garment image: SVG art path (e.g. "/garments/shirt-crisp-white.svg"), a captured camera photo data URL, or a short-lived signed URL when synced. */
   image: string
   source: GarmentSource
   /** ISO date; null for seed samples */
   scannedAt: string | null
   favorite: boolean
   note?: string
+  /** ISO timestamp of the last local edit; used to resolve cloud conflicts. */
+  updatedAt?: string
+  /**
+   * Private Supabase Storage path for a user-uploaded original capture.
+   * Absent for sample artwork. Never contains a public URL.
+   */
+  photoPath?: string
 }
 
 /** Composition shape used by the outfit builder: at most one per category. */
@@ -113,6 +197,8 @@ export interface Outfit {
   /** Ordered: [top, bottom, shoes] */
   garmentIds: string[]
   createdAt: string
+  /** ISO timestamp of the last edit; used to resolve cloud conflicts. */
+  updatedAt?: string
 }
 
 export interface DetectedGarment {
@@ -147,6 +233,8 @@ export interface StyleProfile {
   favoriteColors: GarmentColor[]
   likes: StyleTaste[]
   avoids: StyleTaste[]
+  /** ISO timestamp of the last edit; used to resolve cloud conflicts. */
+  updatedAt?: string
 }
 
 export const EMPTY_STYLE_PROFILE: StyleProfile = {
@@ -160,14 +248,30 @@ export const STYLE_TASTES: StyleTaste[] = ['minimal', 'casual', 'formal', 'stree
 
 export const CATEGORY_LABELS: Record<GarmentCategory, string> = {
   shirt: 'Shirts',
+  blouse: 'Blouses',
+  top: 'Tops',
   pants: 'Pants',
-  shoes: 'Shoes',
+  jeans: 'Jeans',
+  skirt: 'Skirts',
+  dress: 'Dresses',
+  jumpsuit: 'Jumpsuits',
+  ethnic: 'Ethnic Wear',
+  shoes: 'Footwear',
+  accessory: 'Accessories',
 }
 
 export const CATEGORY_SINGULAR: Record<GarmentCategory, string> = {
   shirt: 'Shirt',
+  blouse: 'Blouse',
+  top: 'Top',
   pants: 'Pants',
+  jeans: 'Jeans',
+  skirt: 'Skirt',
+  dress: 'Dress',
+  jumpsuit: 'Jumpsuit',
+  ethnic: 'Ethnic Wear',
   shoes: 'Shoes',
+  accessory: 'Accessory',
 }
 
 export function categoryNextInSequence(state: OutfitComposition): GarmentCategory | null {

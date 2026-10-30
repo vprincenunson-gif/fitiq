@@ -1,4 +1,5 @@
-import type { Garment, GarmentCategory } from './types'
+import type { Garment, OutfitSlot } from './types'
+import { CATEGORY_SINGULAR } from './types'
 
 /** A resolved outfit piece, ready to render as a thumbnail. */
 export interface Piece {
@@ -7,13 +8,13 @@ export interface Piece {
   categoryLabel: string
 }
 
-const PIECE_LABELS: Record<GarmentCategory, string> = {
-  shirt: 'Top',
-  pants: 'Bottom',
+const SLOT_ORDER: OutfitSlot[] = ['top', 'bottom', 'shoes']
+
+const SLOT_LABELS: Record<OutfitSlot, string> = {
+  top: 'Top',
+  bottom: 'Bottom',
   shoes: 'Shoes',
 }
-
-const SLOT_ORDER: GarmentCategory[] = ['shirt', 'pants', 'shoes']
 
 /**
  * Resolve a saved outfit's garment ids against the wardrobe, in canonical
@@ -27,7 +28,13 @@ export function resolveOutfitPieces(
   return garmentIds.flatMap((id, index) => {
     const garment = byId.get(id)
     if (!garment) return []
-    const category = SLOT_ORDER[index] ?? garment.category
-    return [{ image: garment.image, name: garment.name, categoryLabel: PIECE_LABELS[category] }]
+    const slot = SLOT_ORDER[index]
+    return [
+      {
+        image: garment.image,
+        name: garment.name,
+        categoryLabel: slot ? SLOT_LABELS[slot] : CATEGORY_SINGULAR[garment.category],
+      },
+    ]
   })
 }

@@ -1,6 +1,6 @@
 import { Tag } from '../ui/Tag'
 import type { GarmentCategory } from '../../lib/types'
-import { CATEGORY_LABELS } from '../../lib/types'
+import { CATEGORY_LABELS, GARMENT_CATEGORIES } from '../../lib/types'
 
 export type CategoryFilterValue = 'all' | GarmentCategory
 
@@ -10,7 +10,7 @@ interface CategoryFilterProps {
   counts?: Partial<Record<CategoryFilterValue, number>>
 }
 
-const OPTIONS: CategoryFilterValue[] = ['all', 'shirt', 'pants', 'shoes']
+const OPTIONS: CategoryFilterValue[] = ['all', ...GARMENT_CATEGORIES]
 
 export function CategoryFilter({ value, onChange, counts }: CategoryFilterProps) {
   return (

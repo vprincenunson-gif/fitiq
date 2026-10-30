@@ -8,6 +8,8 @@ interface StyleProfileContextValue {
   profile: StyleProfile
   updateProfile: (patch: Partial<StyleProfile>) => void
   resetProfile: () => void
+  /** Replace the profile after a cloud pull. */
+  hydrateProfile: (profile: StyleProfile) => void
 }
 
 const StyleProfileContext = createContext<StyleProfileContextValue | null>(null)
@@ -22,6 +24,7 @@ function readProfile(): StyleProfile {
       favoriteColors: Array.isArray(parsed.favoriteColors) ? parsed.favoriteColors : [],
       likes: Array.isArray(parsed.likes) ? parsed.likes : [],
       avoids: Array.isArray(parsed.avoids) ? parsed.avoids : [],
+      updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : undefined,
     }
   } catch {
     return EMPTY_STYLE_PROFILE
@@ -40,14 +43,19 @@ export function StyleProfileProvider({ children }: { children: ReactNode }) {
   }, [profile])
 
   const updateProfile = useCallback((patch: Partial<StyleProfile>) => {
-    setProfile((prev) => ({ ...prev, ...patch }))
+    setProfile((prev) => ({ ...prev, ...patch, updatedAt: new Date().toISOString() }))
   }, [])
 
-  const resetProfile = useCallback(() => setProfile(EMPTY_STYLE_PROFILE), [])
+  const resetProfile = useCallback(
+    () => setProfile({ ...EMPTY_STYLE_PROFILE, updatedAt: new Date().toISOString() }),
+    [],
+  )
+
+  const hydrateProfile = useCallback((next: StyleProfile) => setProfile(next), [])
 
   const value = useMemo(
-    () => ({ profile, updateProfile, resetProfile }),
-    [profile, updateProfile, resetProfile],
+    () => ({ profile, updateProfile, resetProfile, hydrateProfile }),
+    [profile, updateProfile, resetProfile, hydrateProfile],
   )
 
   return <StyleProfileContext.Provider value={value}>{children}</StyleProfileContext.Provider>

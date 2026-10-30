@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { GarmentCategory, OutfitComposition } from '../../lib/types'
+import type { OutfitComposition, OutfitSlotKey } from '../../lib/types'
 import { wearStatLabel } from '../../lib/wear'
 import { Button } from '../ui/Button'
 import { Icon } from '../ui/Icon'
@@ -8,7 +8,7 @@ import { Dialog } from '../ui/Dialog'
 interface OutfitComposerProps {
   outfit: OutfitComposition
   savedOutfits: { id: string; name: string }[]
-  onRemove: (category: GarmentCategory) => void
+  onRemove: (slotKey: OutfitSlotKey) => void
   onClear: () => void
   onSave: (name: string) => void
   onLoad: (id: string) => void
@@ -18,7 +18,7 @@ interface OutfitComposerProps {
   onMarkWorn?: (id: string) => void
 }
 
-const ROWS: { key: GarmentCategory; label: string }[] = [
+const ROWS: { key: OutfitSlotKey; label: string }[] = [
   { key: 'shirt', label: 'Top' },
   { key: 'pants', label: 'Bottom' },
   { key: 'shoes', label: 'Shoes' },
