@@ -6,6 +6,7 @@ const TABS: { to: string; label: string; icon: IconName }[] = [
   { to: '/wardrobe', label: 'Wardrobe', icon: 'hanger' },
   { to: '/try-on', label: 'Your Fit', icon: 'hanger' },
   { to: '/planner', label: 'Planner', icon: 'calendar' },
+  { to: '/insights', label: 'Insights', icon: 'insights' },
   { to: '/scan', label: 'Scan', icon: 'camera' },
 ]
 
@@ -17,7 +18,7 @@ export function MobileTabs() {
       className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-paper-raised/95 backdrop-blur-sm md:hidden"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-5">
         {TABS.map((tab) => (
           <NavLink
             key={tab.to}

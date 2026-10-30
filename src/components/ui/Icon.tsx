@@ -17,6 +17,7 @@ export type IconName =
   | 'scan'
   | 'trash'
   | 'sparkle'
+  | 'insights'
 
 const PATHS: Record<IconName, React.ReactNode> = {
   camera: (
@@ -52,6 +53,9 @@ const PATHS: Record<IconName, React.ReactNode> = {
   ),
   sparkle: (
     <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z" />
+  ),
+  insights: (
+    <path d="M4 20v-7M10 20V5M16 20v-9M2 20h20" />
   ),
 }
 

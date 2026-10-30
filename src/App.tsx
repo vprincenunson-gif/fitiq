@@ -6,6 +6,7 @@ import { ItemPage } from './pages/ItemPage'
 import { ScanPage } from './pages/ScanPage'
 import { TryOnPage } from './pages/TryOnPage'
 import { PlannerPage } from './pages/PlannerPage'
+import { InsightsPage } from './pages/InsightsPage'
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
       <Route path="/items/:id" element={<Shell><ItemPage /></Shell>} />
       <Route path="/try-on" element={<Shell><TryOnPage /></Shell>} />
       <Route path="/planner" element={<Shell><PlannerPage /></Shell>} />
+      <Route path="/insights" element={<Shell><InsightsPage /></Shell>} />
       <Route path="*" element={<Shell><HomePage /></Shell>} />
     </Routes>
   )
