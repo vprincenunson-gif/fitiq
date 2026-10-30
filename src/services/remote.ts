@@ -1,10 +1,31 @@
 import {
   MockOutfitRecommendationService,
   RecommendationError,
+  type GarmentDescriptor,
   type OutfitRecommendationRequest,
   type OutfitRecommendationService,
   type RecommendedOutfit,
 } from './recommend'
+
+/**
+ * Descriptors are metadata-only. Wear recency is a small numeric signal the
+ * server whitelists alongside the other fields so the remote stylist can use
+ * it as a gentle tie-breaker.
+ */
+function toWireDescriptor(descriptor: GarmentDescriptor) {
+  return {
+    id: descriptor.id,
+    name: descriptor.name,
+    category: descriptor.category,
+    color: descriptor.color,
+    colorLabel: descriptor.colorLabel,
+    fit: descriptor.fit,
+    styleTags: descriptor.styleTags,
+    favorite: descriptor.favorite,
+    wearCount: descriptor.wearCount,
+    lastWornDaysAgo: descriptor.lastWornDaysAgo,
+  }
+}
 
 /**
  * Browser-side client for the server-side Groq proxy. The browser never
@@ -27,7 +48,7 @@ export class RemoteOutfitRecommendationService implements OutfitRecommendationSe
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           vibe: request.vibe,
-          wardrobe: request.wardrobe,
+          wardrobe: request.wardrobe.map(toWireDescriptor),
           exclude: request.exclude ?? [],
           weather: request.weather ?? null,
           profile: request.profile ?? null,

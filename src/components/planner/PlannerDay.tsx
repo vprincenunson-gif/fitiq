@@ -1,13 +1,8 @@
+import type { Piece } from '../../lib/pieces'
 import type { Outfit } from '../../lib/types'
 import { VIBES, VIBE_ORDER, type Vibe } from '../../services/recommend'
 import type { PlannedDay } from '../../stores/PlannerContext'
 import { Icon } from '../ui/Icon'
-
-export interface Piece {
-  image: string
-  name: string
-  categoryLabel: string
-}
 
 interface PlannerDayProps {
   date: Date
@@ -19,9 +14,14 @@ interface PlannerDayProps {
   pieces: Piece[]
   /** The same saved outfit is planned again within the visible week. */
   duplicated: boolean
+  /** This day's look has already been confirmed as worn. */
+  worn: boolean
+  /** Today or earlier — future plans can't be worn yet. */
+  canMarkWorn: boolean
   onAssign: () => void
   onClear: () => void
   onOccasion: (occasion: Vibe | null) => void
+  onMarkWorn: () => void
 }
 
 const WEEKDAY = new Intl.DateTimeFormat('en-US', { weekday: 'short' })
@@ -41,9 +41,12 @@ export function PlannerDay({
   outfit,
   pieces,
   duplicated,
+  worn,
+  canMarkWorn,
   onAssign,
   onClear,
   onOccasion,
+  onMarkWorn,
 }: PlannerDayProps) {
   const weekday = WEEKDAY.format(date)
   const weekdayLong = WEEKDAY_LONG.format(date)
@@ -158,6 +161,24 @@ export function PlannerDay({
           ))}
         </select>
       </label>
+
+      {/* Confirmed wear — logged only after the confirmation dialog */}
+      {assigned && !broken &&
+        (worn ? (
+          <p className="mt-3 inline-flex items-center gap-1 self-start rounded-full border border-forest/30 bg-cream/40 px-2 py-0.5 text-[0.625rem] font-medium uppercase tracking-wider text-forest">
+            <Icon name="check" size={10} />
+            Worn
+          </p>
+        ) : canMarkWorn ? (
+          <button
+            type="button"
+            onClick={onMarkWorn}
+            className="mt-3 inline-flex items-center gap-1 self-start text-[0.625rem] font-medium uppercase tracking-wider text-ink-faint transition-colors hover:text-ink"
+          >
+            <Icon name="check" size={11} />
+            Mark as worn
+          </button>
+        ) : null)}
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { GarmentCategory, OutfitComposition } from '../../lib/types'
+import { wearStatLabel } from '../../lib/wear'
 import { Button } from '../ui/Button'
 import { Icon } from '../ui/Icon'
 import { Dialog } from '../ui/Dialog'
@@ -11,6 +12,10 @@ interface OutfitComposerProps {
   onClear: () => void
   onSave: (name: string) => void
   onLoad: (id: string) => void
+  /** Wear summary for a saved look, shown under its name. */
+  wornSummary?: (id: string) => { wearCount: number; lastWornAt: string | null }
+  /** Opens the confirmation step for marking a saved look as worn. */
+  onMarkWorn?: (id: string) => void
 }
 
 const ROWS: { key: GarmentCategory; label: string }[] = [
@@ -21,7 +26,16 @@ const ROWS: { key: GarmentCategory; label: string }[] = [
 
 const KEY_TO_SLOT = { shirt: 'top', pants: 'bottom', shoes: 'shoes' } as const
 
-export function OutfitComposer({ outfit, savedOutfits, onRemove, onClear, onSave, onLoad }: OutfitComposerProps) {
+export function OutfitComposer({
+  outfit,
+  savedOutfits,
+  onRemove,
+  onClear,
+  onSave,
+  onLoad,
+  wornSummary,
+  onMarkWorn,
+}: OutfitComposerProps) {
   const [saveOpen, setSaveOpen] = useState(false)
   const [name, setName] = useState('')
   const filled = ROWS.filter((row) => outfit[KEY_TO_SLOT[row.key]]).length
@@ -91,18 +105,39 @@ export function OutfitComposer({ outfit, savedOutfits, onRemove, onClear, onSave
         <div className="mt-6 border-t border-line pt-5">
           <p className="overline mb-3">Saved</p>
           <ul className="space-y-2">
-            {savedOutfits.slice(0, 5).map((outfit) => (
-              <li key={outfit.id}>
-                <button
-                  type="button"
-                  onClick={() => onLoad(outfit.id)}
-                  className="group flex w-full items-center justify-between text-left text-sm text-ink-soft transition-colors hover:text-ink"
-                >
-                  <span className="truncate">{outfit.name}</span>
-                  <Icon name="chevron-right" size={14} className="opacity-0 transition-opacity group-hover:opacity-100" />
-                </button>
-              </li>
-            ))}
+            {savedOutfits.slice(0, 5).map((outfit) => {
+              const wear = wornSummary?.(outfit.id)
+              return (
+                <li key={outfit.id} className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => onLoad(outfit.id)}
+                    className="group flex min-w-0 flex-1 items-center justify-between text-left text-sm text-ink-soft transition-colors hover:text-ink"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate">{outfit.name}</span>
+                      {wear && wear.wearCount > 0 && (
+                        <span className="mt-0.5 block truncate text-[0.625rem] font-normal uppercase tracking-wider text-ink-faint">
+                          {wearStatLabel(wear)}
+                        </span>
+                      )}
+                    </span>
+                    <Icon name="chevron-right" size={14} className="opacity-0 transition-opacity group-hover:opacity-100" />
+                  </button>
+                  {onMarkWorn && (
+                    <button
+                      type="button"
+                      onClick={() => onMarkWorn(outfit.id)}
+                      aria-label={`Mark ${outfit.name} as worn`}
+                      title="Mark as worn"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line text-ink-faint transition-colors hover:border-ink/30 hover:text-ink"
+                    >
+                      <Icon name="check" size={14} />
+                    </button>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         </div>
       )}

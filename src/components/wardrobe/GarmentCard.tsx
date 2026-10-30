@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Garment, WearStatus } from '../../lib/types'
-import { CATEGORY_SINGULAR, garmentWearStatus } from '../../lib/types'
+import { CATEGORY_SINGULAR, garmentWearCount, garmentWearStatus } from '../../lib/types'
+import { garmentWearStats, wearStatLabel } from '../../lib/wear'
 import { WearStatusSelector } from './WearStatusSelector'
 import { Icon } from '../ui/Icon'
 
@@ -27,6 +28,11 @@ export function GarmentCard({
         <p className="mt-1 text-xs text-ink-faint">
           {CATEGORY_SINGULAR[garment.category]} · {garment.colorLabel}
         </p>
+        {garmentWearCount(garment) > 0 && (
+          <p className="mt-1 text-[0.6875rem] text-ink-faint">
+            {wearStatLabel(garmentWearStats(garment))}
+          </p>
+        )}
       </div>
       {showRemove && onRemove && (
         <button

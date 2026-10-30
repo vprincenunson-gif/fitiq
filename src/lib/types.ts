@@ -59,6 +59,24 @@ export function garmentWearStatus(garment: Pick<Garment, 'wearStatus'>): WearSta
     : DEFAULT_WEAR_STATUS
 }
 
+/** Confirmed wear count for a garment; legacy items read as 0. */
+export function garmentWearCount(garment: Pick<Garment, 'wearCount'>): number {
+  const count = garment.wearCount
+  return typeof count === 'number' && Number.isFinite(count) && count > 0 ? Math.floor(count) : 0
+}
+
+/** Safe read for the last confirmed wear timestamp; null when never worn. */
+export function garmentLastWornAt(garment: Pick<Garment, 'lastWornAt'>): string | null {
+  const value = garment.lastWornAt
+  return typeof value === 'string' && !Number.isNaN(Date.parse(value)) ? value : null
+}
+
+/** Wear statistics shown in the wardrobe and used for recency nudges. */
+export interface GarmentWearStats {
+  wearCount: number
+  lastWornAt: string | null
+}
+
 export interface Garment {
   id: string
   name: string
@@ -69,6 +87,10 @@ export interface Garment {
   fit: GarmentFit
   /** Real-world wear state; defaults to `ready` via garmentWearStatus(). */
   wearStatus?: WearStatus
+  /** Confirmed wear count; absent means never marked worn. */
+  wearCount?: number
+  /** ISO timestamp of the last confirmed wear; absent/null = never worn. */
+  lastWornAt?: string | null
   /** Garment image: SVG art path (e.g. "/garments/shirt-crisp-white.svg") or a captured camera photo data URL */
   image: string
   source: GarmentSource

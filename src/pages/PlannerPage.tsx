@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useWardrobe } from '../stores/WardrobeContext'
 import { useOutfit } from '../stores/OutfitContext'
+import { useWear } from '../stores/WearContext'
 import {
   PlannerProvider,
   isSameLocalDay,
@@ -10,38 +11,27 @@ import {
   weekDates,
   formatWeekRange,
 } from '../stores/PlannerContext'
-import { PlannerDay, type Piece } from '../components/planner/PlannerDay'
+import { PlannerDay } from '../components/planner/PlannerDay'
 import { AssignOutfitDialog } from '../components/planner/AssignOutfitDialog'
+import { MarkWornDialog } from '../components/wear/MarkWornDialog'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
 import { Icon } from '../components/ui/Icon'
 import { Overline } from '../components/ui/Overline'
 import { Spinner } from '../components/ui/Spinner'
-import type { Garment, GarmentCategory, Outfit } from '../lib/types'
-
-const PIECE_LABELS: Record<GarmentCategory, string> = {
-  shirt: 'Top',
-  pants: 'Bottom',
-  shoes: 'Shoes',
-}
-
-/** Resolve a saved outfit's ids against the wardrobe, in planner order. */
-function piecesOf(outfit: Outfit, byId: Map<string, Garment>): Piece[] {
-  return outfit.garmentIds.flatMap((id, index) => {
-    const garment = byId.get(id)
-    if (!garment) return []
-    const category = (['shirt', 'pants', 'shoes'] as GarmentCategory[])[index] ?? garment.category
-    return [{ image: garment.image, name: garment.name, categoryLabel: PIECE_LABELS[category] }]
-  })
-}
+import type { Outfit } from '../lib/types'
+import { resolveOutfitPieces } from '../lib/pieces'
+import { wearTimestampForDay } from '../lib/wear'
 
 function PlannerInner() {
   const { garments, ready } = useWardrobe()
   const { savedOutfits } = useOutfit()
   const { plan, assignOutfit, setOccasion, clearDay } = usePlanner()
+  const { markWorn, wornEntryFor } = useWear()
 
   const [weekOffset, setWeekOffset] = useState(0)
   const [assigning, setAssigning] = useState<string | null>(null)
+  const [markingWorn, setMarkingWorn] = useState<string | null>(null)
 
   const days = useMemo(() => weekDates(weekOffset), [weekOffset])
   const dayKeys = days.map(localDateKey)
@@ -51,6 +41,7 @@ function PlannerInner() {
 
   // Highlight day captured at mount — pure per render, stable during a visit.
   const [today] = useState(() => new Date())
+  const todayKey = localDateKey(today)
 
   /** Saved looks assigned more than once within the visible week. */
   const repeatedOutfitIds = useMemo(() => {
@@ -125,6 +116,9 @@ function PlannerInner() {
   const plannedCount = dayKeys.filter((key) => plan[key]?.outfitId != null).length
   const repeatedCount = [...repeatedOutfitIds.values()].filter((n) => n > 1).length
   const assigningDate = assigning ? days[dayKeys.indexOf(assigning)] ?? null : null
+  const markingEntry = markingWorn ? plan[markingWorn] : undefined
+  const markingOutfit = markingEntry?.outfitId ? outfitById.get(markingEntry.outfitId) : undefined
+  const markingDate = markingWorn ? days[dayKeys.indexOf(markingWorn)] ?? null : null
 
   return (
     <div>
@@ -187,11 +181,14 @@ function PlannerInner() {
               isWeekend={index >= 5}
               entry={entry}
               outfit={outfit}
-              pieces={outfit ? piecesOf(outfit, byId) : []}
+              pieces={outfit ? resolveOutfitPieces(outfit.garmentIds, byId) : []}
               duplicated={duplicates}
+              worn={outfit ? wornEntryFor(key, outfit.id) != null : false}
+              canMarkWorn={key <= todayKey}
               onAssign={() => setAssigning(key)}
               onClear={() => clearDay(key)}
               onOccasion={(occasion) => setOccasion(key, occasion)}
+              onMarkWorn={() => setMarkingWorn(key)}
             />
           )
         })}
@@ -206,10 +203,30 @@ function PlannerInner() {
         open={assigning != null}
         date={assigningDate}
         savedOutfits={savedOutfits}
-        piecesOf={(outfit) => piecesOf(outfit, byId)}
+        piecesOf={(outfit) => resolveOutfitPieces(outfit.garmentIds, byId)}
         plannedElsewhereFor={plannedElsewhereLabel}
         onSave={(outfitId) => assigning && assignOutfit(assigning, outfitId)}
         onClose={() => setAssigning(null)}
+      />
+
+      <MarkWornDialog
+        open={markingOutfit != null}
+        outfitName={markingOutfit?.name ?? ''}
+        pieces={markingOutfit ? resolveOutfitPieces(markingOutfit.garmentIds, byId) : []}
+        date={markingDate}
+        onConfirm={() => {
+          if (markingWorn && markingOutfit) {
+            markWorn({
+              dateKey: markingWorn,
+              garmentIds: markingOutfit.garmentIds,
+              outfitId: markingOutfit.id,
+              source: 'planner',
+              wornAt: markingDate ? wearTimestampForDay(markingDate) : undefined,
+            })
+          }
+          setMarkingWorn(null)
+        }}
+        onClose={() => setMarkingWorn(null)}
       />
     </div>
   )

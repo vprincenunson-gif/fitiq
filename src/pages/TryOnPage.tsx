@@ -20,6 +20,10 @@ import { tryOnService } from '../services'
 import { VIBES, type Vibe } from '../services/recommend'
 import type { WeatherInfo } from '../services/weather'
 import { useOutfitHistory } from '../stores/OutfitHistoryContext'
+import { useWear } from '../stores/WearContext'
+import { MarkWornDialog } from '../components/wear/MarkWornDialog'
+import { resolveOutfitPieces } from '../lib/pieces'
+import { wearDayKey } from '../lib/wear'
 
 export function TryOnPage() {
   const { currentOutfit, savedOutfits, addToOutfit, removeFromOutfit, clearOutfit, saveOutfit, loadOutfit } =
@@ -27,9 +31,14 @@ export function TryOnPage() {
   const { garments, ready } = useWardrobe()
   const { history, record, remove } = useOutfitHistory()
   const { profile, updateProfile, resetProfile } = useStyleProfile()
+  const { markWorn, outfitWear } = useWear()
   const [styleOpen, setStyleOpen] = useState(false)
   const [composing, setComposing] = useState(false)
   const [weather, setWeather] = useState<WeatherInfo | null>(null)
+  const [markingWorn, setMarkingWorn] = useState<{ id: string; date: Date } | null>(null)
+
+  const garmentMap = useMemo(() => new Map(garments.map((g) => [g.id, g])), [garments])
+  const markingWornOutfit = markingWorn ? savedOutfits.find((o) => o.id === markingWorn.id) : undefined
 
   /** AI-generated look → history (ids only; images stay local). */
   const handleOutfitGenerated = (vibe: Vibe, ids: string[]) => {
@@ -148,6 +157,8 @@ export function TryOnPage() {
                 const outfit = savedOutfits.find((o) => o.id === id)
                 if (outfit) loadOutfit(outfit)
               }}
+              wornSummary={outfitWear}
+              onMarkWorn={(id) => setMarkingWorn({ id, date: new Date() })}
             />
             <ItemTray garments={garments} activeIds={activeIds} onSelect={handleSelect} />
           </div>
@@ -173,6 +184,25 @@ export function TryOnPage() {
           resetProfile()
           setStyleOpen(false)
         }}
+      />
+
+      <MarkWornDialog
+        open={markingWornOutfit != null}
+        outfitName={markingWornOutfit?.name ?? ''}
+        pieces={markingWornOutfit ? resolveOutfitPieces(markingWornOutfit.garmentIds, garmentMap) : []}
+        date={markingWorn?.date ?? null}
+        onConfirm={() => {
+          if (markingWornOutfit && markingWorn) {
+            markWorn({
+              dateKey: wearDayKey(markingWorn.date),
+              garmentIds: markingWornOutfit.garmentIds,
+              outfitId: markingWornOutfit.id,
+              source: 'saved',
+            })
+          }
+          setMarkingWorn(null)
+        }}
+        onClose={() => setMarkingWorn(null)}
       />
     </div>
   )

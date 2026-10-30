@@ -32,6 +32,17 @@ function loadInitial(): { garments: Garment[]; ready: boolean } {
           if (!g.wearStatus || !WEAR_STATUS_VALUES.includes(g.wearStatus)) {
             g.wearStatus = DEFAULT_WEAR_STATUS
           }
+          // Drop corrupted wear-tracking values so counts stay trustworthy.
+          if (typeof g.wearCount !== 'number' || !Number.isFinite(g.wearCount) || g.wearCount < 0) {
+            delete g.wearCount
+          }
+          if (
+            g.lastWornAt !== undefined &&
+            g.lastWornAt !== null &&
+            (typeof g.lastWornAt !== 'string' || Number.isNaN(Date.parse(g.lastWornAt)))
+          ) {
+            delete g.lastWornAt
+          }
         }
         return { garments: parsed, ready: true }
       }

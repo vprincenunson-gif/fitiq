@@ -8,10 +8,12 @@ import { OutfitProvider } from './stores/OutfitContext'
 import { ScanProvider } from './stores/ScanContext'
 import { OutfitHistoryProvider } from './stores/OutfitHistoryContext'
 import { StyleProfileProvider } from './stores/StyleProfileContext'
+import { WearProvider } from './stores/WearContext'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <WardrobeProvider>
+      <WearProvider>
       <OutfitProvider>
         <OutfitHistoryProvider>
           <StyleProfileProvider>
@@ -23,6 +25,7 @@ createRoot(document.getElementById('root')!).render(
           </StyleProfileProvider>
         </OutfitHistoryProvider>
       </OutfitProvider>
+      </WearProvider>
     </WardrobeProvider>
   </StrictMode>,
 )

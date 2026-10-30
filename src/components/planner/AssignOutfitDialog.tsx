@@ -1,9 +1,9 @@
 import { useState } from 'react'
+import type { Piece } from '../../lib/pieces'
 import type { Outfit } from '../../lib/types'
 import { Dialog } from '../ui/Dialog'
 import { Button } from '../ui/Button'
 import { Icon } from '../ui/Icon'
-import type { Piece } from './PlannerDay'
 
 interface AssignOutfitDialogProps {
   open: boolean

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Garment, GarmentCategory, GarmentColor, GarmentFit } from '../../lib/types'
 import { CATEGORY_LABELS } from '../../lib/types'
+import { formatWornDate, garmentWearStats } from '../../lib/wear'
 import { Button } from '../ui/Button'
 import { Icon } from '../ui/Icon'
 
@@ -31,6 +32,7 @@ interface Draft {
 
 export function ItemDetailPanel({ garment, onUpdate, onDelete, onAddToOutfit }: ItemDetailPanelProps) {
   const [editing, setEditing] = useState(false)
+  const wear = garmentWearStats(garment)
   const [draft, setDraft] = useState<Draft>(() => ({
     name: garment.name,
     category: garment.category,
@@ -200,6 +202,17 @@ export function ItemDetailPanel({ garment, onUpdate, onDelete, onAddToOutfit }: 
           <Row label="Color" value={garment.colorLabel} />
           <Row label="Fit" value={garment.fit.charAt(0).toUpperCase() + garment.fit.slice(1)} />
           <Row label="Source" value={garment.source === 'scanned' ? 'Scanned' : 'Sample'} />
+          <Row
+            label="Worn"
+            value={
+              wear.wearCount === 0
+                ? 'Never'
+                : `${wear.wearCount} ${wear.wearCount === 1 ? 'time' : 'times'}`
+            }
+          />
+          {formatWornDate(wear.lastWornAt) && (
+            <Row label="Last worn" value={formatWornDate(wear.lastWornAt) ?? ''} />
+          )}
           {garment.scannedAt && (
             <Row label="Scanned" value={new Date(garment.scannedAt).toLocaleDateString()} />
           )}

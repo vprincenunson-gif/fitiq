@@ -18,6 +18,7 @@ export const GROQ_MODEL = 'openai/gpt-oss-20b'
 
 const ALLOWED_DESCRIPTOR_FIELDS = new Set([
   'id', 'name', 'category', 'color', 'colorLabel', 'fit', 'styleTags', 'favorite',
+  'wearCount', 'lastWornDaysAgo',
 ])
 
 export function sanitizeDescriptor(raw) {
@@ -31,6 +32,21 @@ export function sanitizeDescriptor(raw) {
     if (typeof raw[field] !== 'string' || !raw[field]) return null
   }
   if (raw.favorite !== undefined && typeof raw.favorite !== 'boolean') return null
+  if (
+    raw.wearCount !== undefined &&
+    (typeof raw.wearCount !== 'number' || !Number.isFinite(raw.wearCount) || raw.wearCount < 0)
+  ) {
+    return null
+  }
+  if (
+    raw.lastWornDaysAgo !== undefined &&
+    raw.lastWornDaysAgo !== null &&
+    (typeof raw.lastWornDaysAgo !== 'number' ||
+      !Number.isFinite(raw.lastWornDaysAgo) ||
+      raw.lastWornDaysAgo < 0)
+  ) {
+    return null
+  }
   return {
     id: raw.id,
     name: raw.name,
@@ -40,6 +56,8 @@ export function sanitizeDescriptor(raw) {
     fit: raw.fit,
     styleTags,
     favorite: raw.favorite,
+    wearCount: raw.wearCount,
+    lastWornDaysAgo: raw.lastWornDaysAgo,
   }
 }
 
@@ -81,10 +99,17 @@ export function sanitizeProfile(raw) {
 
 export function buildPrompt(vibe, wardrobe, excluded = [], weather = null, profile = null) {
   const items = wardrobe
-    .map(
-      (d) =>
-        `- ${d.id}: ${d.name} (category=${d.category}, color=${d.color} "${d.colorLabel}", fit=${d.fit}, tags=${d.styleTags.join(',')}${d.favorite ? ', favorite' : ''})`,
-    )
+    .map((d) => {
+      const wear =
+        typeof d.lastWornDaysAgo === 'number'
+          ? `, last worn ${d.lastWornDaysAgo}d ago`
+          : d.lastWornDaysAgo === null
+            ? ', never worn'
+            : ''
+      const count =
+        typeof d.wearCount === 'number' && d.wearCount > 0 ? `, worn ${d.wearCount}x` : ''
+      return `- ${d.id}: ${d.name} (category=${d.category}, color=${d.color} "${d.colorLabel}", fit=${d.fit}, tags=${d.styleTags.join(',')}${d.favorite ? ', favorite' : ''}${wear}${count})`
+    })
     .join('\n')
 
   const lines = [
@@ -96,6 +121,13 @@ export function buildPrompt(vibe, wardrobe, excluded = [], weather = null, profi
     items,
     '',
   ]
+
+  if (wardrobe.some((d) => d.lastWornDaysAgo !== undefined || d.wearCount !== undefined)) {
+    lines.push(
+      'Wear recency: softly prefer pieces worn least recently (or never worn). Treat this as a tie-breaker only — vibe, weather, the user’s style preferences and the available wardrobe always take precedence.',
+      '',
+    )
+  }
 
   if (excluded.length > 0) {
     lines.push(`Avoid these garments unless there is no alternative: ${excluded.join(', ')}`, '')

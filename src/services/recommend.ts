@@ -1,4 +1,6 @@
 import type { Garment, GarmentCategory, GarmentColor, GarmentFit, StyleProfile } from '../lib/types'
+import { garmentLastWornAt, garmentWearCount } from '../lib/types'
+import { daysSinceWorn } from '../lib/wear'
 
 /**
  * Mood/style direction for the AI Outfit Selector.
@@ -28,9 +30,17 @@ export interface GarmentDescriptor {
   styleTags: string[]
   /** Optional signal — providers may use it to nudge toward favorites. */
   favorite?: boolean
+  /** Confirmed wear count; used only for gentle recency nudges. */
+  wearCount?: number
+  /** Local days since the last confirmed wear; null = never worn. */
+  lastWornDaysAgo?: number | null
 }
 
-/** Strip image data at the service boundary — the one place this happens. */
+/**
+ * Strip image data at the service boundary — the one place this happens.
+ * `lastWornDaysAgo` is resolved against today so providers stay deterministic
+ * for a given request.
+ */
 export function toDescriptor(garment: Garment): GarmentDescriptor {
   return {
     id: garment.id,
@@ -41,6 +51,8 @@ export function toDescriptor(garment: Garment): GarmentDescriptor {
     fit: garment.fit,
     styleTags: garment.styleTags,
     favorite: garment.favorite,
+    wearCount: garmentWearCount(garment),
+    lastWornDaysAgo: daysSinceWorn(garmentLastWornAt(garment)),
   }
 }
 
@@ -299,6 +311,14 @@ export class MockOutfitRecommendationService implements OutfitRecommendationServ
         if (fits.includes(g.fit)) s += 1
         // Gentle favorite preference — a nudge on ties, never a mandate.
         if (g.favorite) s += 0.5
+        // Wear recency: softly prefer ready pieces that have rested. Bounded
+        // to ±0.4 — far below style, colour and weather weights — so it only
+        // settles near-ties and never overrides the look or availability.
+        const days = g.lastWornDaysAgo ?? null
+        if (days === null || days >= 21) s += 0.4
+        else if (days >= 8) s += 0.2
+        else if (days <= 2) s -= 0.4
+        else s -= 0.1
         // Style profile nudges: respect preferences without overriding.
         const p = request.profile
         if (p) {
